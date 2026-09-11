@@ -83,6 +83,25 @@
 
             <main class="main-content">
 
+                <!-- ---------- Hinweis auf eine neuere Version ----------
+                     Liegt über allen Ansichten, weil er unabhängig davon
+                     gilt, wo der Nutzer gerade ist. Erscheint nur, wenn die
+                     Prüfung eingeschaltet ist und tatsächlich etwas Neueres
+                     vorliegt. -->
+                <div id="update-banner" class="update-banner is-hidden" role="status">
+                    <div class="update-banner-text">
+                        <strong id="update-banner-title"></strong>
+                        <span id="update-banner-detail"></span>
+                        <span id="update-banner-hint" class="update-banner-hint"></span>
+                    </div>
+                    <div class="update-banner-actions">
+                        <button id="update-download" class="btn-primary btn-small"
+                                type="button"></button>
+                        <button id="update-later" class="btn-text" type="button"></button>
+                        <button id="update-skip" class="btn-text" type="button"></button>
+                    </div>
+                </div>
+
                 <!-- ---------- Übersicht ---------- -->
                 <section id="home-screen" class="view" aria-labelledby="home-title">
 
@@ -310,6 +329,21 @@
                     <span class="switch-text" id="settings-dry-run-label"></span>
                 </label>
                 <p id="settings-dry-run-hint" class="setting-hint"></p>
+            </div>
+
+            <div class="setting-row">
+                <label class="switch" for="settings-check-updates">
+                    <input type="checkbox" id="settings-check-updates">
+                    <span class="switch-track" aria-hidden="true"></span>
+                    <span class="switch-text" id="settings-check-updates-label"></span>
+                </label>
+                <p id="settings-check-updates-hint" class="setting-hint"></p>
+                <div class="setting-action">
+                    <button id="settings-check-now" class="btn-secondary btn-small"
+                            type="button"></button>
+                    <span id="settings-update-result" class="setting-hint"
+                          aria-live="polite"></span>
+                </div>
             </div>
 
             <div class="modal-actions">

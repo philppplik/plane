@@ -449,6 +449,30 @@ select {
 .about-footer { font-size: 0.76rem; color: var(--text-schwach); margin-top: 16px; }
 
 /* ---------------------------------------------------------------------------
+   Hinweis auf eine neuere Version
+   ---------------------------------------------------------------------------
+   Auffällig genug, um bemerkt zu werden; ruhig genug, um nicht zu drängen.
+   Kein Modal: ein Hinweis, der die Bedienung blockiert, wird weggeklickt,
+   ohne gelesen zu werden.
+   --------------------------------------------------------------------------- */
+
+.update-banner {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 14px 18px; border-radius: 14px;
+    border: 1px solid var(--accent-dark);
+    background: rgba(167, 236, 91, 0.14);
+    animation: fadeIn 0.3s ease-out;
+}
+.update-banner-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.update-banner-text strong { color: var(--text-stark); }
+.update-banner-text span { font-size: 0.85rem; }
+.update-banner-hint { font-size: 0.78rem !important; color: var(--text-schwach); }
+.update-banner-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* Der Knopf für die Aktualisierungsprüfung steht unter seinem Hinweistext. */
+.setting-action { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+
+/* ---------------------------------------------------------------------------
    Ansichtskopf – gemeinsam für Programme und Windows-Einstellungen
    --------------------------------------------------------------------------- */
 
@@ -592,6 +616,7 @@ select {
     .target-figures { text-align: left; }
     .about-head { gap: 12px; }
     .entry, .tweak-row { flex-wrap: wrap; }
+    .update-banner-actions { width: 100%; }
 }
 
 @media (max-width: 620px) {

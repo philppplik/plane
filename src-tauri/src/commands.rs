@@ -609,6 +609,49 @@ pub fn get_log_path(app: AppHandle) -> String {
         .to_string()
 }
 
+// ---------------------------------------------------------------------------
+// Aktualisierungsprüfung
+// ---------------------------------------------------------------------------
+
+/// Bei GitHub nach einer neueren Version fragen.
+///
+/// Das Frontend ruft das an zwei Stellen: einmal beim Start, **nur wenn**
+/// `check_updates` an ist, und einmal, wenn der Nutzer in den Einstellungen
+/// ausdrücklich auf „Jetzt prüfen" drückt. Der zweite Fall ist eine bewusste
+/// Handlung und ignoriert die Einstellung deshalb absichtlich.
+#[tauri::command]
+pub async fn check_update() -> Result<engine::update::UpdateInfo, String> {
+    tauri::async_runtime::spawn_blocking(engine::update::pruefe)
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+/// Die Veröffentlichungsseite im Standardbrowser öffnen.
+///
+/// Ohne Parameter: die Adresse steht fest in [`engine::update`]. Ein Command,
+/// der eine beliebige Adresse öffnet, wäre über die Tauri-Brücke erreichbar
+/// und damit ein Hebel.
+#[tauri::command]
+pub fn open_release_page() -> Result<(), String> {
+    engine::update::oeffne_seite()
+}
+
+/// Eine Version dauerhaft übergehen („nicht mehr erinnern").
+#[tauri::command]
+pub fn skip_version(
+    app: AppHandle,
+    state: State<'_, SharedState>,
+    version: String,
+) -> Result<(), String> {
+    let kopie = {
+        let mut zustand = lock(&state)?;
+        zustand.settings.skipped_version = version;
+        zustand.clone()
+    };
+    persist(&app, &kopie);
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     //! Unit-Tests der Command-Schicht.

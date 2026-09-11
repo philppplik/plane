@@ -170,6 +170,8 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     ("settings.confirm_risky.hint", "Dringend empfohlen. Ohne Nachfrage löscht Plane auch Unwiderrufliches.", "Strongly recommended. Without it Plane also deletes irreversible items."),
     ("settings.dry_run_default", "Standardmäßig nur simulieren", "Simulate by default"),
     ("settings.dry_run_default.hint", "Zeigt bei jedem Lauf nur an, was passieren würde.", "Every run only shows what would happen."),
+    ("settings.check_updates", "Nach neuen Versionen suchen", "Check for new versions"),
+    ("settings.check_updates.hint", "Fragt beim Start bei GitHub nach der jüngsten Version. Das ist der einzige Netzwerkzugriff, den Plane kennt — er lädt nichts herunter und installiert nichts. Übermittelt wird nichts außer Ihrer IP-Adresse, wie beim Aufruf einer Webseite.", "Asks GitHub for the newest version at startup. This is the only network access Plane has — it downloads nothing and installs nothing. Nothing is transmitted beyond your IP address, just as when opening any web page."),
     ("settings.reset_welcome", "Willkommensbildschirm erneut zeigen", "Show welcome screen again"),
     ("settings.close", "Schließen", "Close"),
     ("settings.saved", "Gespeichert", "Saved"),
@@ -290,6 +292,27 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     ("tweak.managed", "Von einer Richtlinie Ihrer Organisation überlagert", "Overridden by a policy of your organization"),
     ("tweak.applied", "Übernommen.", "Applied."),
     ("tweak.reverted", "Zurückgenommen.", "Undone."),
+    // --- Aktualisierungsprüfung ------------------------------------------
+    ("update.title", "Neue Version verfügbar", "New version available"),
+    ("update.check_now", "Jetzt prüfen", "Check now"),
+    ("update.checking", "Wird geprüft …", "Checking …"),
+    ("update.current", "Ihre Version: {0}", "Your version: {0}"),
+    ("update.available", "Version {0} ist erschienen. Sie haben {1}.", "Version {0} has been released. You have {1}."),
+    ("update.published", "Veröffentlicht am {0}", "Published on {0}"),
+    ("update.up_to_date", "Plane ist auf dem neuesten Stand.", "Plane is up to date."),
+    ("update.download", "Herunterladen", "Download"),
+    ("update.later", "Später", "Later"),
+    ("update.skip", "Diese Version überspringen", "Skip this version"),
+    ("update.manual", "Oder im Browser öffnen: {0}", "Or open in your browser: {0}"),
+    ("update.install_hint", "Plane installiert nichts von selbst. Der Knopf öffnet die Veröffentlichungsseite im Browser; von dort laden Sie die passende Datei herunter und starten sie.", "Plane installs nothing by itself. The button opens the release page in your browser; from there you download the matching file and run it."),
+    ("update.disabled", "Die Suche nach neuen Versionen ist ausgeschaltet.", "Checking for new versions is turned off."),
+    ("update.error.offline", "GitHub ist nicht erreichbar. Besteht eine Internetverbindung?", "GitHub cannot be reached. Is there an internet connection?"),
+    ("update.error.timeout", "GitHub hat nicht rechtzeitig geantwortet. Bitte später erneut versuchen.", "GitHub did not answer in time. Please try again later."),
+    ("update.error.rate_limit", "GitHub hat zu viele Anfragen von dieser Verbindung erhalten. Bitte später erneut versuchen.", "GitHub received too many requests from this connection. Please try again later."),
+    ("update.error.none_published", "Es gibt noch keine Veröffentlichung zum Vergleichen.", "There is no published release to compare against yet."),
+    ("update.error.unreadable", "Die Antwort von GitHub war nicht lesbar.", "The answer from GitHub was not readable."),
+    ("update.error.browser", "Der Browser ließ sich nicht öffnen. Bitte die Adresse von Hand aufrufen.", "The browser could not be opened. Please enter the address manually."),
+
     ("tweakgroup.privacy", "Datenschutz", "Privacy"),
     ("tweakgroup.explorer", "Explorer", "File Explorer"),
     ("tweakgroup.taskbar", "Taskleiste", "Taskbar"),
@@ -529,6 +552,37 @@ mod tests {
         ] {
             assert_ne!(t("de", schluessel), schluessel, "fehlt: {schluessel}");
             assert_ne!(t("en", schluessel), schluessel, "fehlt: {schluessel}");
+        }
+    }
+
+    /// Die Aktualisierungsprüfung liefert Fehler als Schlüssel, nicht als
+    /// fertige Sätze. Ein fehlender Eintrag zeigte dem Nutzer `update.error.*`.
+    #[test]
+    fn jeder_fehler_der_aktualisierungspruefung_ist_uebersetzt() {
+        for schluessel in [
+            "update.error.offline",
+            "update.error.timeout",
+            "update.error.rate_limit",
+            "update.error.none_published",
+            "update.error.unreadable",
+            "update.error.browser",
+        ] {
+            assert_ne!(t("de", schluessel), schluessel, "fehlt: {schluessel}");
+            assert_ne!(t("en", schluessel), schluessel, "fehlt: {schluessel}");
+        }
+    }
+
+    /// Wer die Prüfung einschaltet, soll vorher lesen können, was dabei
+    /// passiert – und zwar ohne die Dokumentation zu öffnen.
+    #[test]
+    fn der_hinweis_zur_netzwerkpruefung_nennt_github() {
+        for sprache in ["de", "en"] {
+            let hinweis = t(sprache, "settings.check_updates.hint");
+            assert!(
+                hinweis.contains("GitHub"),
+                "{sprache}: GitHub nicht genannt"
+            );
+            assert!(hinweis.len() > 80, "{sprache}: zu knapp für eine Zusage");
         }
     }
 

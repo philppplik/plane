@@ -7,7 +7,45 @@ die Versionierung [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
-Nichts.
+### Hinzugefügt
+
+- **Suche nach neuen Versionen.** Plane kann bei GitHub nachsehen, ob eine
+  neuere Veröffentlichung vorliegt — in der Oberfläche über
+  **Einstellungen → Nach neuen Versionen suchen**, in der Kommandozeile über
+  `plane-cli update`.
+
+  Das ist der erste und einzige Netzwerkzugriff in Plane. Damit das
+  Offline-Versprechen trotzdem hält:
+
+  - **Standardmäßig aus.** Wer nichts einstellt, für den ändert sich nichts.
+  - **Eine Anfrage, ein Ziel.** Ein `GET` auf `api.github.com`. Mitgeschickt
+    wird nichts außer dem `User-Agent` `plane/<version>`, den die GitHub-API
+    verlangt.
+  - **Kein Selbstaktualisieren.** Plane lädt nichts herunter und installiert
+    nichts; der Knopf öffnet die Veröffentlichungsseite im Browser. Solange
+    die Pakete nicht signiert sind, wäre alles andere ein Angriffsweg.
+  - **Die Zieladresse steht im Programm**, nicht in der Antwort von GitHub.
+  - **Ein Vertragstest** stellt sicher, dass an keiner anderen Stelle
+    Netzwerkcode entsteht.
+
+  Der Hinweis lässt sich vertagen oder für eine bestimmte Version dauerhaft
+  überspringen — ein Hinweis, den man nicht loswird, wird übersehen.
+- **Dokumentation der Kommandozeile** um `tweaks` und `update` ergänzt; beide
+  fehlten in der Befehlsübersicht.
+
+### Geändert
+
+- README und `SECURITY.md` sagten „kein Netzwerkcode, keine
+  Aktualisierungsprüfung". Das stimmt so nicht mehr und steht jetzt genau da,
+  wo es hingehört — mit der vollständigen Auskunft, was bei eingeschalteter
+  Prüfung das Gerät verlässt.
+
+### Sicherheit
+
+- TLS läuft über **SChannel**, also über den TLS-Stack und den
+  Zertifikatspeicher von Windows. Kein mitgeliefertes Krypto, keine eigenen
+  Wurzelzertifikate — und es funktioniert dort, wo eine Firma TLS aufbricht.
+  Der im System eingetragene Proxy wird beachtet.
 
 ## [0.2.0] — 2026-09-11
 

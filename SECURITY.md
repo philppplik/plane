@@ -45,8 +45,19 @@ Architektur.
 
 ### Was Plane nicht tut
 
-- **Kein Netzwerkverkehr.** Es gibt keinen HTTP-Client, keine Telemetrie, keine
-  Aktualisierungsprüfung. Nichts verlässt das Gerät.
+- **Keine Telemetrie.** Plane zählt keine Starts, meldet keine Nutzung und
+  legt kein Profil an.
+- **Kein Netzwerkverkehr ohne Ihr Zutun.** Es gibt genau einen Netzzugriff,
+  und er ist standardmäßig **aus**: die Suche nach neuen Versionen. Sie ist in
+  `src-tauri/src/engine/update.rs` gekapselt, ein Vertragstest verhindert,
+  dass an anderer Stelle Netzwerkcode entsteht. Eingeschaltet stellt Plane
+  eine einzige Anfrage an `api.github.com` und schickt dabei nichts mit außer
+  dem `User-Agent` `plane/<version>`, den die GitHub-API verlangt. GitHub
+  sieht Ihre IP-Adresse — wie beim Aufruf jeder Webseite.
+- **Kein Selbstaktualisieren.** Plane lädt nichts herunter und installiert
+  nichts. Es öffnet die Veröffentlichungsseite im Browser; alles Weitere ist
+  Ihre Handlung. Solange die Pakete nicht signiert sind, wäre alles andere
+  ein Angriffsweg.
 - **Keine Shell.** Externe Befehle laufen als Argumentliste ohne
   `cmd.exe`/PowerShell-Zeichenkettenauswertung. Es gibt keine Stelle, an der
   ein Dateiname in eine Befehlszeile eingesetzt wird.

@@ -19,7 +19,7 @@ python -m pytest
 ```
 
 Erwarteter Zustand: **beide Suiten grün**, ohne übersprungene oder erwartet
-fehlschlagende Tests. 299 Rust-Testfälle, 55 Python-Testfälle, zusammen unter
+fehlschlagende Tests. 315 Rust-Testfälle, 63 Python-Testfälle, zusammen unter
 30 Sekunden.
 
 ### Voraussetzungen
@@ -129,6 +129,7 @@ Bewusste Lücken, damit niemand falsche Sicherheit ableitet:
 | Dienststeuerung (`wuauserv`, `FontCache`) | Wird gemockt; ein echter Dienststopp im Test wäre ein Eingriff ins Testsystem |
 | Registry-**Schreib**zugriffe | Nur der Trockenlauf wird getestet. Die Sicherungs- und Löschpfade sind durch die Sperrlisten abgesichert, aber nicht durch Tests |
 | MSI-Build und Installation | Wird im Release-Workflow gebaut, aber nicht automatisch geprüft |
+| Echte Abfrage bei GitHub | Ein Test, der ins Netz greift, schlägt offline fehl und macht die Suite von einem fremden Dienst abhängig. Geprüft sind der Versionsvergleich und die Auswertung der Antwort an vorgegebenen Zeichenketten, dazu ein Verbindungsversuch auf einen toten Port — der deckte einen Absturz auf, der nur zur Laufzeit auftrat |
 | Windows 10 und ARM64 | Entwickelt und getestet auf Windows 11 ARM64; x64 nur über CI |
 
 ## CI

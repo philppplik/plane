@@ -22,6 +22,7 @@ import * as programs from './src/programs.js';
 import * as run from './src/run.js';
 import * as settings from './src/settings.js';
 import * as tweaks from './src/tweaks.js';
+import * as update from './src/update.js';
 import * as fmt from './src/format.js';
 import { $, zeige } from './src/dom.js';
 import { setzeKatalog, t, uebersetzeMarkup } from './src/i18n.js';
@@ -145,6 +146,7 @@ async function ladeSprache(kuerzel) {
     about.zeichne();
     programs.beschrifte();
     tweaks.beschrifte();
+    update.beschrifte();
 }
 
 /** Texte, die außerhalb der Module liegen (Willkommen, Seitenleiste). */
@@ -204,6 +206,9 @@ async function starte() {
         confirm_risky: true,
         dry_run_default: false,
         selected_targets: [],
+        // Auch im Notfallzustand bleibt der Netzwerkzugriff aus.
+        check_updates: false,
+        skipped_version: '',
     };
     zustand.sprachen = sprachen;
 
@@ -224,6 +229,7 @@ async function starte() {
     settings.spiegele();
     programs.verdrahte({ meldung: zeigeMeldung });
     tweaks.verdrahte({ meldung: zeigeMeldung });
+    update.verdrahte({ meldung: zeigeMeldung });
 
     $('welcome-start')?.addEventListener('click', async () => {
         zeigeBildschirm(await api.starteApp());
@@ -256,6 +262,11 @@ async function starte() {
 
     zeigeBildschirm(await api.holeStartbildschirm());
     await aktualisiereLaufwerk();
+
+    // 6. Ganz zum Schluss und ohne darauf zu warten: nach einer neueren
+    //    Version sehen. Tut nichts, solange die Einstellung aus ist – und
+    //    darf den Start unter keinen Umständen aufhalten.
+    update.pruefeBeimStart().catch(() => {});
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -84,6 +84,8 @@ Befehle:
   info      Systeminformationen, Rechtestatus und Laufwerksbelegung
   programs  Installierte Programme auflisten
   uninstall Ein Programm deinstallieren
+  tweaks    Windows-Einstellungen anzeigen und ändern
+  update    Nachsehen, ob eine neuere Version erschienen ist
   tui       Die textbasierte Oberfläche starten
 
 Globale Optionen:
@@ -211,6 +213,68 @@ Software ist schlimmer als ein Klick mehr.
 
 Ohne Terminal (also in einem Skript) ist `--yes` zwingend; sonst bricht Plane
 ab, statt auf eine Eingabe zu warten, die nie kommt.
+
+### `tweaks` — Windows-Einstellungen
+
+```bash
+plane-cli tweaks
+```
+
+Ohne Schalter zeigt der Befehl alle Punkte mit ihrem tatsächlichen Zustand
+(`Aktiv`, `Inaktiv`, `Teilweise`) und den Hinweisen, warum ein Punkt auf
+diesem System wirkungslos oder von einer Richtlinie überlagert ist.
+
+```bash
+plane-cli tweaks --on explorer.file_extensions
+```
+
+```bash
+plane-cli tweaks --off taskbar.hide_search
+```
+
+```bash
+plane-cli tweaks --revert explorer.file_extensions
+```
+
+`--revert` stellt den Zustand wieder her, den Plane **vorgefunden** hat.
+`--off` setzt dagegen den Windows-Standard. Das ist nicht dasselbe — im
+Zweifel `--revert`.
+
+Der Katalog, jeder Punkt mit seiner Nebenwirkung, und was bewusst fehlt:
+[TWEAKS.md](TWEAKS.md).
+
+### `update` — nach einer neueren Version sehen
+
+```bash
+plane-cli update
+```
+
+Der **einzige** Befehl, der das Netzwerk berührt. Er fragt
+`api.github.com` nach der jüngsten Veröffentlichung und nennt die Nummer.
+Er lädt nichts herunter, installiert nichts und schickt nichts mit außer dem
+`User-Agent` `plane/<version>`, den die GitHub-API verlangt.
+
+Anders als in der Oberfläche gibt es hier keinen Schalter in den
+Einstellungen: wer den Befehl eintippt, hat sich bereits entschieden.
+
+Der Exitcode ist auch dann `0`, wenn eine neuere Version vorliegt — „es gibt
+ein Update" ist kein Fehler. Skripte sollen `--json` auswerten und auf `newer`
+sehen, statt einen Exitcode umzudeuten:
+
+```bash
+plane-cli update --json
+```
+
+```json
+{"current":"0.2.0","latest":"0.3.0","newer":true,"url":"https://github.com/philppplik/plane/releases/latest","published":"2026-09-11"}
+```
+
+Schlägt die Abfrage fehl, ist der Exitcode `1` und die Ausgabe nennt den
+Grund — im JSON-Fall als maschinenlesbarer Schlüssel:
+
+```json
+{"error":"update.error.offline","message":"GitHub ist nicht erreichbar. Besteht eine Internetverbindung?"}
+```
 
 ### `tui` — Textoberfläche
 

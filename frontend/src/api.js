@@ -73,6 +73,16 @@ export const holeProgramme = () => rufe('list_programs', undefined, []);
 export const deinstalliere = (program, quiet) =>
     rufe('uninstall_program', { program, quiet }, null);
 
+// --- Aktualisierungsprüfung ------------------------------------------------
+//
+// Der einzige Netzwerkzugriff der Anwendung. `pruefeAktualisierung` wird nur
+// aufgerufen, wenn die Einstellung an ist oder der Nutzer ausdrücklich auf
+// „Jetzt prüfen" drückt.
+
+export const pruefeAktualisierung = () => rufe('check_update', undefined, null);
+export const oeffneVeroeffentlichung = () => rufe('open_release_page');
+export const ueberspringeVersion = (version) => rufe('skip_version', { version });
+
 // --- Windows-Einstellungen -------------------------------------------------
 
 export const holeTweaks = () => rufe('list_tweaks', undefined, []);

@@ -153,6 +153,16 @@ pub enum Befehl {
         #[arg(long)]
         json: bool,
     },
+    /// Nachsehen, ob eine neuere Version erschienen ist.
+    ///
+    /// Der einzige Befehl, der das Netzwerk berührt. Er lädt nichts herunter
+    /// und installiert nichts – er nennt nur die Versionsnummer und die
+    /// Adresse.
+    Update {
+        /// Ausgabe als JSON.
+        #[arg(long)]
+        json: bool,
+    },
     /// Die textbasierte Oberfläche starten.
     Tui,
 }

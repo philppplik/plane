@@ -92,6 +92,22 @@ def test_jeder_navigationsknopf_fuehrt_zu_einem_bildschirm():
         assert f"{bildschirm}:" in haupt, f"Bildschirm nicht in der Karte: {bildschirm}"
 
 
+def test_die_aktualisierungspruefung_fragt_erst_die_einstellung():
+    """Der Start darf nicht ins Netz greifen, solange der Nutzer das nicht
+    eingeschaltet hat. Die Prüfung auf `check_updates` muss deshalb **vor**
+    dem Backend-Aufruf stehen, nicht danach."""
+    quelle = _lies(FRONTEND / "src" / "update.js")
+
+    abschnitt = quelle.split("export async function pruefeBeimStart")[1]
+    abschnitt = abschnitt.split("export ")[0]
+
+    wache = abschnitt.find("check_updates")
+    aufruf = abschnitt.find("pruefeAktualisierung")
+    assert wache != -1, "pruefeBeimStart prüft die Einstellung nicht"
+    assert aufruf != -1, "pruefeBeimStart fragt gar nicht nach"
+    assert wache < aufruf, "Die Einstellung wird erst nach dem Netzzugriff geprüft"
+
+
 def test_dokument_beginnt_mit_doctype_und_ist_deutsch_ausgezeichnet():
     quelle = _lies(INDEX).lstrip()
     assert quelle.lower().startswith("<!doctype html>")

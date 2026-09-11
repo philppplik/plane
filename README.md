@@ -56,7 +56,12 @@ Simulationsmodus zeigt jederzeit, was passieren *würde*.
 - **Windows-Einstellungen** — 19 kuratierte, umkehrbare Punkte zu Datenschutz,
   Explorer, Taskleiste und Leistung
 - **Kommandozeile und TUI** für alles, was die Oberfläche kann
-- **Kein Netzwerkcode.** Keine Telemetrie, keine Aktualisierungsprüfung
+- **Keine Telemetrie.** Plane zählt nichts, meldet nichts und legt kein Profil
+  an — weder anonym noch sonstwie
+- **Offline, sofern Sie nichts anderes wollen.** Der einzige Netzwerkzugriff
+  ist die Suche nach neuen Versionen. Sie ist **standardmäßig aus** und lässt
+  sich in den Einstellungen einschalten; siehe
+  [Aktuell bleiben](#aktuell-bleiben)
 
 ## Sicherheit
 
@@ -90,6 +95,41 @@ fälschlich für verwaist halten.
 
 Administratorrechte sind **optional**. Ohne sie werden die betroffenen Ziele
 gemeldet übersprungen, statt still zu scheitern.
+
+## Aktuell bleiben
+
+Plane kann nachsehen, ob eine neuere Version erschienen ist. Das ist der
+einzige Netzwerkzugriff des Programms, und er ist **standardmäßig
+ausgeschaltet**.
+
+Einschalten: **Einstellungen → Nach neuen Versionen suchen**. Daneben steht
+ein Knopf **Jetzt prüfen**, der auch ohne die Einstellung funktioniert — wer
+ihn drückt, hat sich ja gerade entschieden.
+
+In der Kommandozeile:
+
+```bash
+plane-cli update
+```
+
+Was dabei passiert, vollständig:
+
+| | |
+|-|-|
+| **Wohin** | eine Anfrage an `api.github.com`, sonst nirgendwohin |
+| **Was hin** | nichts außer dem `User-Agent` `plane/<version>`, den GitHub verlangt. GitHub sieht Ihre IP-Adresse, wie beim Aufruf jeder Webseite |
+| **Was zurück** | die Nummer der jüngsten Veröffentlichung |
+| **Was danach** | nichts. Plane lädt nichts herunter und installiert nichts |
+
+Ist etwas Neueres da, erscheint ein Hinweis mit drei Möglichkeiten:
+**Herunterladen** öffnet die Veröffentlichungsseite im Browser, **Später**
+blendet den Hinweis bis zum nächsten Start aus, **Diese Version überspringen**
+dauerhaft für genau diese Version.
+
+**Warum Plane sich nicht selbst aktualisiert:** ein Programm, das sich selbst
+ersetzen kann, lässt sich auch durch etwas anderes ersetzen. Solange die
+Pakete nicht signiert sind ([SECURITY.md](SECURITY.md)), wäre das ein
+Angriffsweg und kein Komfortgewinn.
 
 ## Bauen
 
@@ -171,6 +211,7 @@ src-tauri/src/engine/scan.rs      WAS WÄRE löschbar (nebenwirkungsfrei)
 src-tauri/src/engine/clean.rs     LÖSCHEN, was ausgewählt wurde
 src-tauri/src/engine/uninstall.rs Programme auflisten und deinstallieren
 src-tauri/src/engine/tweaks.rs    Windows-Einstellungen, umkehrbar
+src-tauri/src/engine/update.rs    der einzige Netzwerkzugriff, standardmäßig aus
 src-tauri/src/i18n.rs             alle Texte, Deutsch und Englisch
 src-tauri/src/commands.rs         Tauri-Brücke, keine Logik
 src-tauri/src/cli/                Kommandozeile und TUI

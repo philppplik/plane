@@ -71,6 +71,10 @@ pub fn run() {
             commands::list_tweaks,
             commands::set_tweak,
             commands::revert_tweak,
+            // Aktualisierungsprüfung
+            commands::check_update,
+            commands::open_release_page,
+            commands::skip_version,
         ])
         .run(tauri::generate_context!())
         .expect("Fehler beim Starten der Tauri-Anwendung");

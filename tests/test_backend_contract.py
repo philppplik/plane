@@ -130,6 +130,45 @@ def test_engine_kennt_die_oberflaeche_nicht():
         assert "tauri::" not in code, f"{datei.name} verwendet Tauri"
 
 
+def test_netzwerkzugriff_gibt_es_nur_an_einer_stelle():
+    """Plane verspricht, offline zu arbeiten. Die Aktualisierungsprüfung ist
+    die eine Ausnahme – und sie soll die eine Ausnahme bleiben.
+
+    Ein zweites Modul, das ins Netz greift, wäre für Nutzer nicht mehr
+    nachvollziehbar und würde das Versprechen in README und SECURITY.md
+    stillschweigend brechen."""
+    erlaubt = {"update.rs"}
+
+    for datei in sorted((SRC / "engine").glob("*.rs")) + sorted(SRC.glob("*.rs")):
+        if datei.name in erlaubt:
+            continue
+        quellzeilen = [
+            zeile
+            for zeile in _lies(datei).splitlines()
+            if not zeile.lstrip().startswith(("//", "//!", "///"))
+        ]
+        code = "\n".join(quellzeilen)
+        for netzwerk in ("ureq", "reqwest", "TcpStream", "UdpSocket"):
+            assert netzwerk not in code, f"{datei.name} greift auf das Netz zu ({netzwerk})"
+
+
+def test_aktualisierungspruefung_ist_standardmaessig_aus():
+    """Wer nichts einstellt, für den bleibt Plane offline."""
+    quelle = _lies(SRC / "state.rs")
+    assert "check_updates: false" in quelle, "Voreinstellung fehlt oder ist an"
+
+
+def test_die_aktualisierungspruefung_laedt_nichts_herunter():
+    """Ein Aufräumwerkzeug, das sich selbst ersetzen kann, ist ein
+    Angriffsweg – solange die Pakete nicht signiert sind erst recht."""
+    quelle = _lies(SRC / "engine" / "update.rs")
+
+    # Die Prüfung darf lesen und die Veröffentlichungsseite im Browser
+    # öffnen. Was sie nicht darf: etwas ablegen oder etwas starten.
+    for verboten in ("std::fs", "Command::new", "fs::write", "File::create"):
+        assert verboten not in quelle, f"update.rs schreibt oder startet: {verboten}"
+
+
 def test_fortschrittsereignis_hat_einen_stabilen_namen():
     assert 'PROGRESS_EVENT: &str = "plane://progress"' in _lies(COMMANDS_RS)
 

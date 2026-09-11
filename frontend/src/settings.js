@@ -11,6 +11,7 @@ import { t } from './i18n.js';
 import { zustand } from './state.js';
 import * as api from './api.js';
 import { setzeTheme } from './theme.js';
+import * as update from './update.js';
 
 /** Wird gesetzt, sobald der Dialog verdrahtet ist. */
 let beiSprachwechsel = async () => {};
@@ -56,6 +57,14 @@ export function verdrahte(haken) {
         beiAenderung();
     });
 
+    // Der einzige Schalter, der Netzwerkverkehr auslöst. Er steht bewusst
+    // ganz unten und mit ausführlichem Hinweistext daneben.
+    $('settings-check-updates')?.addEventListener('change', (e) =>
+        speichere({ check_updates: e.target.checked })
+    );
+
+    $('settings-check-now')?.addEventListener('click', () => update.pruefeJetzt());
+
     $('settings-reset-welcome')?.addEventListener('click', async () => {
         await api.setzeWillkommenZurueck();
         melde($('settings-reset-welcome'));
@@ -75,6 +84,7 @@ export function beschrifte() {
     $('settings-confirm-risky-hint').textContent = t('settings.confirm_risky.hint');
     $('settings-dry-run-label').textContent = t('settings.dry_run_default');
     $('settings-dry-run-hint').textContent = t('settings.dry_run_default.hint');
+    update.beschrifte();
     $('settings-reset-welcome').textContent = t('settings.reset_welcome');
     $('settings-close').textContent = t('settings.close');
     $('settings-close-x').setAttribute('aria-label', t('settings.close'));
@@ -96,6 +106,7 @@ export function spiegele() {
     markiereTheme(einstellungen.theme);
     $('settings-confirm-risky').checked = Boolean(einstellungen.confirm_risky);
     $('settings-dry-run').checked = Boolean(einstellungen.dry_run_default);
+    $('settings-check-updates').checked = Boolean(einstellungen.check_updates);
 }
 
 function markiereTheme(theme) {
