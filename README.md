@@ -103,6 +103,14 @@ Python 3.11+ nur für die Tests.
 
 ## Kommandozeile
 
+Installieren (keine Administratorrechte nötig):
+
+```bat
+scripts\install-cli.bat
+```
+
+Danach in einem **neuen** Terminal:
+
 ```bash
 plane-cli                     # Textoberfläche (Standard im Terminal)
 plane-cli list                # alle Reinigungsziele
@@ -120,6 +128,9 @@ Exitcodes: `0` Erfolg, `1` mindestens ein Ziel fehlgeschlagen, `2` Bedienfehler,
 
 Die TUI bietet Kategorien- und Zielauswahl, Fortschrittsbalken und
 vollständige Tastaturbedienung (`?` zeigt die Belegung).
+
+Vollständige Referenz mit allen Zielschlüsseln, Exitcodes und der
+JSON-Ausgabe: [docs/CLI.md](docs/CLI.md).
 
 ## Tests
 
@@ -148,6 +159,7 @@ src-tauri/src/i18n.rs             alle Texte, Deutsch und Englisch
 src-tauri/src/commands.rs         Tauri-Brücke, keine Logik
 src-tauri/src/cli/                Kommandozeile und TUI
 frontend/                         Oberfläche (Vanilla JS, Vite)
+scripts/                          Installation der CLI
 tests/                            statische Vertragstests (pytest)
 ```
 
@@ -158,6 +170,7 @@ Ein neues Reinigungsziel besteht aus **einem Katalogeintrag plus zwei
 
 | Dokument | Inhalt |
 |----------|--------|
+| [docs/CLI.md](docs/CLI.md) | Kommandozeile und TUI: alle Befehle, Zielschlüssel, Exitcodes, JSON |
 | [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md) | Aufbau, Schichten, Entwurfsentscheidungen |
 | [docs/REINIGUNGSZIELE.md](docs/REINIGUNGSZIELE.md) | Jedes Ziel mit Risiko und Nebenwirkung — und was bewusst fehlt |
 | [docs/DATENSTRUKTUREN.md](docs/DATENSTRUKTUREN.md) | Datenmodell, Command-Verträge, Konventionen |

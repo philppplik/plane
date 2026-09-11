@@ -32,11 +32,13 @@ pip install -r requirements-dev.txt
 npm run tauri:dev
 ```
 
-Die Kommandozeile brauchst du dafür nicht zu bauen — sie entsteht mit:
+Die Kommandozeile läuft ohne Installation direkt aus dem Quelltext:
 
 ```bash
 cargo run --manifest-path src-tauri/Cargo.toml --bin plane-cli -- scan
 ```
+
+Alle Befehle und Optionen: [docs/CLI.md](docs/CLI.md).
 
 ## Projektstruktur
 
@@ -55,6 +57,8 @@ src-tauri/src/i18n.rs             ← alle Texte, Deutsch und Englisch
 src-tauri/src/commands.rs         ← Tauri-Brücke, keine Logik
 src-tauri/src/cli/                ← Kommandozeile und TUI
 frontend/                         ← Oberfläche (Vanilla JS, Vite)
+scripts/                          ← Installation der CLI
+tests/                            ← statische Vertragstests (pytest)
 ```
 
 ## Tests
@@ -73,10 +77,13 @@ python -m pytest                                   # statische Vertragstests
 Beide müssen grün sein. Details und die bewusst nicht abgedeckten Bereiche
 stehen in [docs/TESTS.md](docs/TESTS.md).
 
-**Zwei Sicherheitsnetze in den Tests bitte nicht entfernen:** `conftest.py`
-blockiert echte Prozessstarts und echte Löschvorgänge. Ein Test, der
-versehentlich eine Bereinigung auslöst, schlägt dadurch fehl, statt Dateien auf
-deinem Rechner zu löschen.
+**Zwei Regeln für Tests, die löschen** — eine Testsuite für ein Löschwerkzeug
+darf nicht versehentlich löschen:
+
+1. Wirklich gelöscht wird ausschließlich in einem eigenen Ordner unter
+   `std::env::temp_dir()`, und hinterher wird aufgeräumt.
+2. Jeder Test, der den gesamten Katalog berührt, läuft im Trockenlauf
+   (`dry_run: true`).
 
 ## Ein neues Reinigungsziel hinzufügen
 
