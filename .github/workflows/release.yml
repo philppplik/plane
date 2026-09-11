@@ -100,6 +100,26 @@ jobs:
           prerelease: false
           args: --target ${{ matrix.target }}
 
+      # Die Kommandozeile ist eine eigene Binaerdatei. scripts/install-cli.ps1
+      # laedt genau diesen Namen aus dem Release - ohne ihn scheitert der
+      # Einzeiler aus docs/CLI.md.
+      - name: Kommandozeile bauen
+        run: >
+          cargo build --release --locked
+          --manifest-path src-tauri/Cargo.toml
+          --target ${{ matrix.target }}
+          --bin plane-cli
+
+      - name: Kommandozeile an den Release haengen
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $quelle = "src-tauri/target/${{ matrix.target }}/release/plane-cli.exe"
+          $ziel   = "plane-cli-${{ matrix.arch }}.exe"
+          Copy-Item $quelle $ziel
+          gh release upload "${{ inputs.tag || github.ref_name }}" $ziel `
+            --repo "$env:GITHUB_REPOSITORY" --clobber
+
       - name: Installer zusaetzlich als Workflow-Artefakt sichern
         uses: actions/upload-artifact@v4
         with:
@@ -107,3 +127,32 @@ jobs:
           path: src-tauri/target/${{ matrix.target }}/release/bundle/msi/*.msi
           if-no-files-found: error
           retention-days: 14
+
+  # Erst wenn beide Architekturen fertig sind, stehen alle Dateien am Release.
+  # Die Pruefsummen werden deshalb in einem eigenen Schritt ueber den
+  # tatsaechlichen Inhalt des Releases gebildet - nicht ueber das, was der
+  # Build zu erzeugen glaubte.
+  pruefsummen:
+    name: Pruefsummen
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Dateien des Releases holen und pruefen
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          mkdir dateien && cd dateien
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern '*.msi' --pattern '*.exe'
+          sha256sum * > ../SHA256SUMS.txt
+          cd ..
+          cat SHA256SUMS.txt
+          gh release upload "$TAG" SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" --clobber
