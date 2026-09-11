@@ -1,6 +1,6 @@
 {
   "name": "plane",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Plane - Lightweight Windows PC Cleaner",
   "keywords": ["pc cleaner", "disk cleaner", "windows", "tauri"],
   "license": "MIT",

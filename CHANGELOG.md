@@ -7,6 +7,16 @@ die Versionierung [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+Nichts.
+
+## [0.3.0] — 2026-09-11
+
+Zwei neue Fähigkeiten und drei Korrekturen an Stellen, die im Alltag
+gestört haben.
+
+> Die Installationspakete sind **nicht signiert**. Windows SmartScreen wird
+> beim ersten Start warnen. Siehe [SECURITY.md](SECURITY.md).
+
 ### Hinzugefügt
 
 - **Programmsymbole** in der Programmliste. Gelesen wird `DisplayIcon` aus
@@ -72,6 +82,11 @@ die Versionierung [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Behoben
 
+- **Der Installations-Einzeiler für die Kommandozeile lief ins Leere.** An
+  der Veröffentlichung 0.2.0 hingen nur die beiden MSI-Dateien; die vom
+  Skript erwarteten `plane-cli-x64.exe`, `plane-cli-arm64.exe` und
+  `SHA256SUMS.txt` fehlten, weil der Release-Workflow sie erst nach dem
+  Bauen von 0.2.0 erzeugte. Ab 0.3.0 hängen sie dran.
 - **Der Internet-Zwischenspeicher meldete einen Fehler.** Windows verweigert
   das Durchlaufen von `INetCache\Content.IE5` grundsätzlich — jedem Prozess,
   auch dem Administrator (`os error 448`). Das war als Fehlschlag gezählt und
