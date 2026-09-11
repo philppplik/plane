@@ -11,6 +11,7 @@
 //! process   – externe Befehle ohne Shell
 //! log       – Nachvollziehbarkeit der Läufe
 //! elevation – Neustart mit Administratorrechten
+//! uninstall – Programme auflisten und deinstallieren
 //! registry  – Registry-Analyse mit Sicherung
 //! recyclebin/installers – Sonderfälle mit eigener Logik
 //! runtime   – Abbruch, Fortschritt, Rechte, Prozesse
@@ -33,6 +34,7 @@ pub mod registry;
 pub mod runtime;
 pub mod scan;
 pub mod types;
+pub mod uninstall;
 
 pub use catalog::{default_selection, target_by_key, targets_in, TARGETS};
 pub use clean::clean;

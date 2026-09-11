@@ -81,8 +81,10 @@ Befehle:
   list    Alle Reinigungsziele auflisten
   scan    Analysieren, ohne etwas zu verändern
   clean   Bereinigen
-  info    Systeminformationen, Rechtestatus und Laufwerksbelegung
-  tui     Die textbasierte Oberfläche starten
+  info      Systeminformationen, Rechtestatus und Laufwerksbelegung
+  programs  Installierte Programme auflisten
+  uninstall Ein Programm deinstallieren
+  tui       Die textbasierte Oberfläche starten
 
 Globale Optionen:
   --lang <de|en>   Sprache der Ausgabe (Standard: Systemsprache)
@@ -168,6 +170,47 @@ plane-cli info
 
 Zeigt Betriebssystem, CPU, Architektur, RAM, Laufwerksbelegung und ob Plane
 mit Administratorrechten läuft.
+
+### `programs` — installierte Programme
+
+```bash
+plane-cli programs
+```
+
+```bash
+plane-cli programs --filter discord
+```
+
+| Option | Wirkung |
+|--------|---------|
+| `--filter <TEXT>` | Nur Namen, die diesen Text enthalten |
+| `--all` | Auch geschützte Einträge zeigen |
+| `--json` | Maschinenlesbare Ausgabe |
+
+Standardmäßig werden nur entfernbare Einträge gezeigt. `--all` blendet auch die
+geschützten ein — mit Begründung in der Spalte „Hinweis".
+
+### `uninstall` — ein Programm entfernen
+
+```bash
+plane-cli uninstall Discord
+```
+
+Die Kennung stammt aus `programs`. **Plane löscht nichts selbst** — es startet
+den Deinstaller des jeweiligen Herstellers.
+
+| Option | Wirkung |
+|--------|---------|
+| `-y`, `--yes` | Ohne Rückfrage |
+| `--quiet` | Nach Möglichkeit ohne Dialog |
+| `--json` | Maschinenlesbare Ausgabe |
+
+`--quiet` wirkt nur, wenn der Hersteller einen stillen Schalter hinterlegt hat
+oder es ein MSI-Paket ist. Plane **rät keine Schalter** — halb entfernte
+Software ist schlimmer als ein Klick mehr.
+
+Ohne Terminal (also in einem Skript) ist `--yes` zwingend; sonst bricht Plane
+ab, statt auf eine Eingabe zu warten, die nie kommt.
 
 ### `tui` — Textoberfläche
 
@@ -285,6 +328,14 @@ Betroffen sind `system.temp.windows`, `system.logs`, `system.prefetch`,
 
 Für diese Ziele ein Terminal als Administrator öffnen und `plane-cli` dort
 starten.
+
+**Wichtig:** Bei Dateien, die ein laufendes Programm geöffnet hält, helfen
+Administratorrechte **nicht**. Eine exklusiv geöffnete Datei lässt sich auch
+als Administrator nicht löschen — dagegen hilft nur, das Programm zu
+schließen. Plane unterscheidet die beiden Fälle und sagt jeweils, was hilft.
+
+Auch die Deinstallation maschinenweit installierter Programme braucht erhöhte
+Rechte; `plane-cli programs` markiert das je Eintrag.
 
 ## Beispiele
 

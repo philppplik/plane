@@ -496,6 +496,52 @@ pub fn get_log(app: AppHandle, lines: Option<usize>) -> Result<String, String> {
     Ok(zeilen[anfang..].join("\n"))
 }
 
+// ---------------------------------------------------------------------------
+// Programme deinstallieren
+// ---------------------------------------------------------------------------
+
+/// Installierte Programme auflisten.
+///
+/// Läuft über `spawn_blocking`: das Auslesen der Registry und der Store-Pakete
+/// dauert je nach System ein bis zwei Sekunden.
+#[tauri::command]
+pub async fn list_programs() -> Result<Vec<engine::uninstall::Programm>, String> {
+    tauri::async_runtime::spawn_blocking(engine::uninstall::liste)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Ein Programm deinstallieren.
+///
+/// `quiet` versucht eine Deinstallation ohne Dialog – das geht nur, wenn der
+/// Hersteller einen stillen Schalter hinterlegt hat oder es ein MSI-Paket ist.
+/// Ansonsten öffnet der Deinstaller sein eigenes Fenster.
+#[tauri::command]
+pub async fn uninstall_program(
+    app: AppHandle,
+    program: engine::uninstall::Programm,
+    quiet: bool,
+) -> Result<engine::uninstall::UninstallResult, String> {
+    let verzeichnis = config_dir(&app);
+    let name = program.name.clone();
+
+    let ergebnis = tauri::async_runtime::spawn_blocking(move || {
+        engine::uninstall::deinstalliere(&program, quiet)
+    })
+    .await
+    .map_err(|e| e.to_string())?;
+
+    engine::log::notiz(
+        &verzeichnis,
+        &format!(
+            "DEINSTALLATION {name} ok={} exit={} geprueft={}",
+            ergebnis.ok, ergebnis.exit_code, ergebnis.verified
+        ),
+    );
+
+    Ok(ergebnis)
+}
+
 /// Pfad der Protokolldatei – damit die Oberfläche ihn anzeigen kann.
 #[tauri::command]
 pub fn get_log_path(app: AppHandle) -> String {

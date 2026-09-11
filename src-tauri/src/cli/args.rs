@@ -108,6 +108,36 @@ pub enum Befehl {
         #[arg(long)]
         json: bool,
     },
+    /// Installierte Programme auflisten.
+    Programs {
+        /// Nur Namen, die diesen Text enthalten.
+        #[arg(long, value_name = "TEXT")]
+        filter: Option<String>,
+        /// Auch geschützte Einträge zeigen.
+        #[arg(long)]
+        all: bool,
+        /// Ausgabe als JSON.
+        #[arg(long)]
+        json: bool,
+    },
+    /// Ein Programm deinstallieren.
+    ///
+    /// Die Kennung stammt aus `plane-cli programs`. Plane startet den
+    /// Deinstaller des Herstellers – es löscht nichts selbst.
+    Uninstall {
+        /// Kennung des Programms.
+        #[arg(value_name = "KENNUNG")]
+        id: String,
+        /// Ohne Rückfrage ausführen.
+        #[arg(short = 'y', long)]
+        yes: bool,
+        /// Nach Möglichkeit ohne Dialog deinstallieren.
+        #[arg(long)]
+        quiet: bool,
+        /// Ausgabe als JSON.
+        #[arg(long)]
+        json: bool,
+    },
     /// Die textbasierte Oberfläche starten.
     Tui,
 }

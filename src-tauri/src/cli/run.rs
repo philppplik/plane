@@ -125,6 +125,19 @@ pub fn ausfuehren(cli: Cli) -> Exitcode {
             let ausgabe = Ausgabe::neu(lang, cli.no_color, json);
             melde(systeminfo(&ausgabe), &ausgabe)
         }
+        Some(Befehl::Programs { filter, all, json }) => {
+            let ausgabe = Ausgabe::neu(lang, cli.no_color, json);
+            melde(programme(&ausgabe, filter.as_deref(), all), &ausgabe)
+        }
+        Some(Befehl::Uninstall {
+            id,
+            yes,
+            quiet,
+            json,
+        }) => {
+            let ausgabe = Ausgabe::neu(lang, cli.no_color, json);
+            melde(deinstallieren(&ausgabe, &id, yes, quiet), &ausgabe)
+        }
         Some(Befehl::Tui) => starte_tui(&lang, cli.no_color),
         // Ohne Unterbefehl ist die Oberfläche gemeint – aber nur, wenn
         // jemand zuschaut. In einer Pipeline wäre das eine Falle.
@@ -447,6 +460,155 @@ fn systeminfo(ausgabe: &Ausgabe) -> Result<Exitcode, Bedienfehler> {
 // ---------------------------------------------------------------------------
 // tui
 // ---------------------------------------------------------------------------
+
+/// Installierte Programme auflisten.
+fn programme(
+    ausgabe: &Ausgabe,
+    filter: Option<&str>,
+    alle: bool,
+) -> Result<Exitcode, Bedienfehler> {
+    let mut liste = engine::uninstall::liste();
+
+    if let Some(text) = filter {
+        let klein = text.to_lowercase();
+        liste.retain(|p| p.name.to_lowercase().contains(&klein));
+    }
+    let gesperrt = liste.iter().filter(|p| !p.removable).count();
+    if !alle {
+        liste.retain(|p| p.removable);
+    }
+
+    if ausgabe.json {
+        println!("{}", serde_json::to_string(&liste).unwrap_or_default());
+        return Ok(Exitcode::Erfolg);
+    }
+
+    let mut tabelle = table::Tabelle::neu(
+        &["KENNUNG", "NAME", "VERSION", "GRÖSSE", "QUELLE", "HINWEIS"],
+        &[
+            table::Ausrichtung::Links,
+            table::Ausrichtung::Links,
+            table::Ausrichtung::Links,
+            table::Ausrichtung::Rechts,
+            table::Ausrichtung::Links,
+            table::Ausrichtung::Links,
+        ],
+    );
+
+    for programm in &liste {
+        tabelle.zeile(vec![
+            text::kuerzen(&programm.id, 38),
+            text::kuerzen(&programm.name, 38),
+            text::kuerzen(&programm.version, 14),
+            if programm.size > 0 {
+                format_bytes(programm.size)
+            } else {
+                "–".to_string()
+            },
+            i18n::t(
+                &ausgabe.lang,
+                &format!("uninstall.source.{}", programm.source.key()),
+            ),
+            if programm.removable {
+                String::new()
+            } else {
+                i18n::t(&ausgabe.lang, &programm.protection)
+            },
+        ]);
+    }
+
+    ausgabe.tabelle(&tabelle);
+    ausgabe.zeile("");
+    ausgabe.zeile(&ausgabe.stil.akzent(&i18n::format(
+        &ausgabe.lang,
+        "uninstall.count",
+        &[&liste.len().to_string(), &gesperrt.to_string()],
+    )));
+
+    Ok(Exitcode::Erfolg)
+}
+
+/// Ein Programm deinstallieren.
+fn deinstallieren(
+    ausgabe: &Ausgabe,
+    id: &str,
+    ohne_rueckfrage: bool,
+    still: bool,
+) -> Result<Exitcode, Bedienfehler> {
+    let liste = engine::uninstall::liste();
+    let Some(programm) = liste.iter().find(|p| p.id.eq_ignore_ascii_case(id)) else {
+        return Err(Bedienfehler(format!(
+            "Unbekannte Kennung: {id}. `plane-cli programs` zeigt die verfügbaren."
+        )));
+    };
+
+    if !programm.removable {
+        ausgabe.zeile(
+            &ausgabe
+                .stil
+                .fehler(&i18n::t(&ausgabe.lang, &programm.protection)),
+        );
+        return Ok(Exitcode::Fehlgeschlagen);
+    }
+
+    // Eine Deinstallation ist nicht rückgängig zu machen – ohne Terminal wird
+    // deshalb nichts gestartet, was nicht ausdrücklich freigegeben wurde.
+    if !ohne_rueckfrage {
+        if !ausgabe.interaktiv {
+            return Err(Bedienfehler(
+                "Ohne Terminal ist --yes erforderlich.".to_string(),
+            ));
+        }
+        ausgabe.zeile(&i18n::format(
+            &ausgabe.lang,
+            "uninstall.confirm",
+            &[&programm.name],
+        ));
+        let frage = i18n::t(&ausgabe.lang, "cli.confirm_prompt");
+        if !frage_stellen(ausgabe, &frage)? {
+            ausgabe.zeile(&i18n::t(&ausgabe.lang, "cli.aborted"));
+            return Ok(Exitcode::Abgebrochen);
+        }
+    }
+
+    ausgabe.zeile(&i18n::format(
+        &ausgabe.lang,
+        "uninstall.removing",
+        &[&programm.name],
+    ));
+
+    let ergebnis = engine::uninstall::deinstalliere(programm, still);
+    engine::log::notiz(
+        &konfigurationsordner(),
+        &format!(
+            "DEINSTALLATION {} ok={} exit={}",
+            programm.name, ergebnis.ok, ergebnis.exit_code
+        ),
+    );
+
+    if ausgabe.json {
+        println!("{}", serde_json::to_string(&ergebnis).unwrap_or_default());
+    } else if ergebnis.ok {
+        let meldung = if ergebnis.message.is_empty() {
+            i18n::format(&ausgabe.lang, "uninstall.done", &[&programm.name])
+        } else {
+            i18n::t(&ausgabe.lang, &ergebnis.message)
+        };
+        ausgabe.zeile(&ausgabe.stil.akzent(&meldung));
+    } else {
+        ausgabe.zeile(
+            &ausgabe
+                .stil
+                .fehler(&i18n::t(&ausgabe.lang, &ergebnis.message)),
+        );
+    }
+
+    Ok(if ergebnis.ok {
+        Exitcode::Erfolg
+    } else {
+        Exitcode::Fehlgeschlagen
+    })
+}
 
 fn starte_tui(lang: &str, no_color: bool) -> Exitcode {
     match tui::starten(lang, no_color) {
