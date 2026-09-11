@@ -77,7 +77,7 @@ jobs:
       # tauri-action baut das Frontend ueber `beforeBuildCommand` mit, legt den
       # Entwurfs-Release an (bzw. findet den bestehenden) und laedt die MSI hoch.
       - name: Bauen und an den Release haengen
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
