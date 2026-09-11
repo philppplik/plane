@@ -497,6 +497,65 @@ pub fn get_log(app: AppHandle, lines: Option<usize>) -> Result<String, String> {
 }
 
 // ---------------------------------------------------------------------------
+// Windows-Einstellungen
+// ---------------------------------------------------------------------------
+
+/// Zustand aller angebotenen Tweaks.
+#[tauri::command]
+pub async fn list_tweaks() -> Result<Vec<engine::tweaks::TweakStatus>, String> {
+    tauri::async_runtime::spawn_blocking(engine::tweaks::status_aller)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Einen Tweak ein- oder ausschalten.
+///
+/// Der Vorzustand landet in einem Journal, damit `revert_tweak` genau ihn
+/// wiederherstellen kann – nicht einen angenommenen Windows-Standard.
+#[tauri::command]
+pub async fn set_tweak(
+    app: AppHandle,
+    key: String,
+    enabled: bool,
+) -> Result<engine::tweaks::TweakState, String> {
+    let verzeichnis = config_dir(&app);
+    let protokoll = verzeichnis.clone();
+    let name = key.clone();
+
+    let zustand = tauri::async_runtime::spawn_blocking(move || {
+        engine::tweaks::anwenden(&key, enabled, &verzeichnis)
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+
+    engine::log::notiz(
+        &protokoll,
+        &format!("TWEAK {name} {}", if enabled { "an" } else { "aus" }),
+    );
+    Ok(zustand)
+}
+
+/// Die letzte Änderung eines Tweaks zurücknehmen.
+#[tauri::command]
+pub async fn revert_tweak(
+    app: AppHandle,
+    key: String,
+) -> Result<engine::tweaks::TweakState, String> {
+    let verzeichnis = config_dir(&app);
+    let protokoll = verzeichnis.clone();
+    let name = key.clone();
+
+    let zustand = tauri::async_runtime::spawn_blocking(move || {
+        engine::tweaks::zuruecknehmen(&key, &verzeichnis)
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+
+    engine::log::notiz(&protokoll, &format!("TWEAK {name} zurueckgenommen"));
+    Ok(zustand)
+}
+
+// ---------------------------------------------------------------------------
 // Programme deinstallieren
 // ---------------------------------------------------------------------------
 

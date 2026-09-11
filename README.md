@@ -51,6 +51,10 @@ Simulationsmodus zeigt jederzeit, was passieren *würde*.
 - **Helles und dunkles Erscheinungsbild**, dem System folgend oder fest
 - **Fortschrittsanzeige** mit Prozentwert, aktuellem Ziel, laufender
   Byte-Summe und einem Abbrechen-Knopf, der auch wirkt
+- **Programme deinstallieren** — installierte Software auflisten und entfernen,
+  mit Schutz für Laufzeitpakete, Treiber und Systembestandteile
+- **Windows-Einstellungen** — 19 kuratierte, umkehrbare Punkte zu Datenschutz,
+  Explorer, Taskleiste und Leistung
 - **Kommandozeile und TUI** für alles, was die Oberfläche kann
 - **Kein Netzwerkcode.** Keine Telemetrie, keine Aktualisierungsprüfung
 
@@ -66,13 +70,16 @@ Schutzmechanismen:
 | Reparse-Point-Erkennung | Eine Junction führt den Lauf aus dem Zielbaum heraus |
 | Keine Shell — Befehle als Argumentliste | Command-Injection |
 | Registry-Sicherung vor jeder Änderung | Nicht rückholbare Registry-Schäden |
+| Tweaks merken den **vorgefundenen** Zustand, nicht einen angenommenen Standard | Zurücknehmen überschreibt eigene Einstellungen |
+| Geschützte Programme können nicht deinstalliert werden | Entfernte Laufzeitpakete brechen andere Software |
 | Abbruch statt halber Bereinigung bei fehlgeschlagenem Dienststopp | Inkonsistente Caches |
 | Warnung bei laufenden Programmen | Weniger löschen als angekündigt |
 
-Was Plane **bewusst nicht** anfasst — Browser-Passwörter, COM/CLSID-Einträge,
-Defender-Quarantäne, Ereignisprotokolle, Spotify-Downloads, die
-VS-Code-Zeitleiste und mehr — steht mit Begründung in
-[docs/REINIGUNGSZIELE.md](docs/REINIGUNGSZIELE.md#bewusst-nicht-bereinigt).
+Was Plane **bewusst nicht** anfasst, steht jeweils mit Begründung in der
+Dokumentation: beim Reinigen etwa Browser-Passwörter, COM-Registrierungen und
+Spotify-Downloads ([Details](docs/REINIGUNGSZIELE.md#bewusst-nicht-bereinigt)),
+bei den Einstellungen etwa das Abschalten von Windows Update und Defender
+([Details](docs/TWEAKS.md#bewusst-nicht-angeboten)).
 
 ## Systemanforderungen
 
@@ -123,6 +130,10 @@ plane-cli clean --dry-run     # simulieren
 plane-cli clean -y            # empfohlene Auswahl bereinigen
 plane-cli clean browser.chrome.cache app.discord
 plane-cli info                # System, Rechtestatus, Laufwerk
+plane-cli programs            # installierte Programme
+plane-cli uninstall Discord   # ein Programm entfernen
+plane-cli tweaks              # Windows-Einstellungen anzeigen
+plane-cli tweaks --on explorer.file_extensions
 ```
 
 Global: `--lang de|en`, `--no-color`.
@@ -141,7 +152,7 @@ JSON-Ausgabe: [docs/CLI.md](docs/CLI.md).
 npm test
 ```
 
-244 Rust-Unit-Tests und 55 statische Vertragstests, zusammen unter 30
+299 Rust-Unit-Tests und 55 statische Vertragstests, zusammen unter 30
 Sekunden. Die Vertragstests prüfen ohne laufende App, dass Frontend, Backend
 und Sprachkatalog zusammenpassen — etwa dass jeder aufgerufene Command
 existiert und jedes Reinigungsziel übersetzt ist.
@@ -158,6 +169,8 @@ CLI und Tests verwenden denselben Code.
 src-tauri/src/engine/catalog.rs   WAS bereinigt wird (einziger Ort mit Pfaden)
 src-tauri/src/engine/scan.rs      WAS WÄRE löschbar (nebenwirkungsfrei)
 src-tauri/src/engine/clean.rs     LÖSCHEN, was ausgewählt wurde
+src-tauri/src/engine/uninstall.rs Programme auflisten und deinstallieren
+src-tauri/src/engine/tweaks.rs    Windows-Einstellungen, umkehrbar
 src-tauri/src/i18n.rs             alle Texte, Deutsch und Englisch
 src-tauri/src/commands.rs         Tauri-Brücke, keine Logik
 src-tauri/src/cli/                Kommandozeile und TUI
@@ -176,12 +189,14 @@ Ein neues Reinigungsziel besteht aus **einem Katalogeintrag plus zwei
 | [docs/CLI.md](docs/CLI.md) | Kommandozeile und TUI: alle Befehle, Zielschlüssel, Exitcodes, JSON |
 | [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md) | Aufbau, Schichten, Entwurfsentscheidungen |
 | [docs/REINIGUNGSZIELE.md](docs/REINIGUNGSZIELE.md) | Jedes Ziel mit Risiko und Nebenwirkung — und was bewusst fehlt |
+| [docs/TWEAKS.md](docs/TWEAKS.md) | Windows-Einstellungen: jeder Punkt mit Nebenwirkung — und was bewusst fehlt |
 | [docs/DATENSTRUKTUREN.md](docs/DATENSTRUKTUREN.md) | Datenmodell, Command-Verträge, Konventionen |
 | [docs/TESTS.md](docs/TESTS.md) | Testsuite, Sicherheitsnetze, Lücken |
 | [docs/BEKANNTE_MAENGEL.md](docs/BEKANNTE_MAENGEL.md) | Mängelregister der Frühphase |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Mitwirken, neues Reinigungsziel hinzufügen |
 | [SECURITY.md](SECURITY.md) | Sicherheitsmodell, Lücken melden |
 | [CHANGELOG.md](CHANGELOG.md) | Änderungsverlauf |
+| [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) | Projekte, auf deren Arbeit Plane aufbaut |
 
 ## Dank
 

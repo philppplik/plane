@@ -267,6 +267,88 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     ("target.registry.orphans.name", "Verwaiste Registry-Einträge", "Orphaned registry entries"),
     ("target.registry.orphans.description", "Verweise auf Programme, die es nicht mehr gibt. Microsoft rät von Registry-Bereinigung ab; Plane sichert deshalb vorher automatisch.", "References to programs that no longer exist. Microsoft advises against registry cleaning, so Plane always creates a backup first."),
 
+    // --- Tweaks -----------------------------------------------------------
+    ("tweaks.title", "Einstellungen anpassen", "Adjust settings"),
+    ("tweaks.subtitle", "Eine kleine, geprüfte Auswahl an Windows-Einstellungen. Jede lässt sich zurücknehmen — Plane merkt sich dafür den Zustand, den es vorgefunden hat.", "A small, vetted set of Windows settings. Every one can be undone — Plane remembers the state it found, not an assumed default."),
+    ("tweaks.omitted", "Bewusst nicht dabei: Windows Update abschalten, Defender deaktivieren, Edge oder OneDrive entfernen. Solche Eingriffe haben dokumentiert Systeme beschädigt.", "Deliberately absent: disabling Windows Update, turning off Defender, removing Edge or OneDrive. Such changes have documented cases of breaking systems."),
+    ("tweaks.apply", "Anwenden", "Apply"),
+    ("tweaks.revert", "Zurücknehmen", "Undo"),
+    ("tweaks.state.on", "Aktiv", "On"),
+    ("tweaks.state.off", "Inaktiv", "Off"),
+    ("tweaks.state.mixed", "Teilweise", "Partially"),
+    ("tweaks.state.mixed.hint", "Nur ein Teil der zugehörigen Werte steht wie erwartet. Anwenden setzt alle.", "Only some of the underlying values are as expected. Applying sets all of them."),
+    ("tweaks.effect.immediate", "Wirkt sofort", "Takes effect immediately"),
+    ("tweaks.effect.explorer", "Explorer muss neu starten", "Explorer needs to restart"),
+    ("tweaks.effect.restart", "Neustart oder neue Anmeldung nötig", "Restart or new sign-in required"),
+    ("tweak.needs_admin", "Dieser Punkt braucht Administratorrechte.", "This item requires administrator rights."),
+    ("tweak.no_journal", "Für diesen Punkt gibt es nichts zurückzunehmen.", "There is nothing to undo for this item."),
+    ("tweak.unsupported", "Auf dieser Windows-Version wirkungslos", "No effect on this Windows version"),
+    ("tweak.managed", "Von einer Richtlinie Ihrer Organisation überlagert", "Overridden by a policy of your organization"),
+    ("tweak.applied", "Übernommen.", "Applied."),
+    ("tweak.reverted", "Zurückgenommen.", "Undone."),
+    ("tweakgroup.privacy", "Datenschutz", "Privacy"),
+    ("tweakgroup.explorer", "Explorer", "File Explorer"),
+    ("tweakgroup.taskbar", "Taskleiste", "Taskbar"),
+    ("tweakgroup.performance", "Leistung", "Performance"),
+    ("tweakgroup.system", "System", "System"),
+    ("tweak.privacy.advertising_id.name", "Werbe-ID abschalten", "Turn off advertising ID"),
+    ("tweak.privacy.advertising_id.description", "Apps bekommen keine geräteweite Kennung mehr, mit der sie Ihr Verhalten über Anwendungen hinweg zusammenführen können.", "Apps no longer receive a device-wide identifier they can use to link your behaviour across applications."),
+    ("tweak.privacy.advertising_id.effect", "Werbung bleibt, wird aber weniger passgenau.", "Ads remain, but become less targeted."),
+    ("tweak.privacy.tailored.name", "Zugeschnittene Erlebnisse abschalten", "Turn off tailored experiences"),
+    ("tweak.privacy.tailored.description", "Windows wertet Ihre Diagnosedaten nicht mehr aus, um Tipps, Werbung und Empfehlungen auf Sie zuzuschneiden.", "Windows stops using your diagnostic data to tailor tips, ads and recommendations to you."),
+    ("tweak.privacy.tailored.effect", "Weniger personalisierte Vorschläge im System.", "Fewer personalised suggestions throughout the system."),
+    ("tweak.privacy.app_tracking.name", "Zuletzt geöffnete Apps nicht merken", "Do not track recently opened apps"),
+    ("tweak.privacy.app_tracking.description", "Windows führt keine Liste mehr darüber, welche Programme Sie wie oft starten.", "Windows stops keeping a list of which programs you start and how often."),
+    ("tweak.privacy.app_tracking.effect", "Die Liste „Meistverwendet“ im Startmenü bleibt leer.", "The “Most used” list in the Start menu stays empty."),
+    ("tweak.privacy.input_telemetry.name", "Tipp-Telemetrie abschalten", "Turn off typing telemetry"),
+    ("tweak.privacy.input_telemetry.description", "Windows sammelt keine Daten mehr darüber, wie Sie tippen und schreiben.", "Windows stops collecting data about how you type and write."),
+    ("tweak.privacy.input_telemetry.effect", "Vorschläge bei der Texteingabe werden mit der Zeit etwas schlechter.", "Text input suggestions get slightly worse over time."),
+    ("tweak.privacy.feedback.name", "Feedback-Nachfragen abschalten", "Turn off feedback prompts"),
+    ("tweak.privacy.feedback.description", "Windows fragt nicht mehr von sich aus nach Ihrer Meinung zum Betriebssystem.", "Windows no longer asks you for feedback about the operating system on its own."),
+    ("tweak.privacy.feedback.effect", "Keine.", "None."),
+    ("tweak.privacy.suggested_apps.name", "Automatisch vorgeschlagene Apps abschalten", "Stop auto-suggested apps"),
+    ("tweak.privacy.suggested_apps.description", "Windows installiert keine Spiele und Apps mehr von sich aus im Startmenü.", "Windows stops installing games and apps into your Start menu on its own."),
+    ("tweak.privacy.suggested_apps.effect", "Keine. Bereits installierte Apps bleiben.", "None. Already installed apps remain."),
+    ("tweak.explorer.file_extensions.name", "Dateiendungen anzeigen", "Show file extensions"),
+    ("tweak.explorer.file_extensions.description", "Der Explorer zeigt .pdf, .exe und so weiter wieder an. Das ist auch eine Sicherheitsfrage: „Rechnung.pdf.exe“ ist ohne Endung nicht als Programm erkennbar.", "File Explorer shows .pdf, .exe and so on again. This is also a security matter: “invoice.pdf.exe” is not recognisable as a program without its extension."),
+    ("tweak.explorer.file_extensions.effect", "Keine.", "None."),
+    ("tweak.explorer.hidden_files.name", "Versteckte Dateien anzeigen", "Show hidden files"),
+    ("tweak.explorer.hidden_files.description", "Der Explorer zeigt Dateien und Ordner, die als versteckt markiert sind.", "File Explorer shows files and folders marked as hidden."),
+    ("tweak.explorer.hidden_files.effect", "Ordner wirken unaufgeräumter.", "Folders look more cluttered."),
+    ("tweak.explorer.classic_menu.name", "Klassisches Kontextmenü", "Classic context menu"),
+    ("tweak.explorer.classic_menu.description", "Der Rechtsklick zeigt wieder das vollständige Menü, ohne den Umweg über „Weitere Optionen anzeigen“.", "Right-click shows the full menu again, without going through “Show more options”."),
+    ("tweak.explorer.classic_menu.effect", "Das Menü ist länger und weniger aufgeräumt.", "The menu is longer and less tidy."),
+    ("tweak.explorer.launch_to_pc.name", "Explorer öffnet „Dieser PC“", "File Explorer opens “This PC”"),
+    ("tweak.explorer.launch_to_pc.description", "Ein neues Explorer-Fenster startet mit der Laufwerksübersicht statt mit dem Schnellzugriff.", "A new Explorer window starts with the drive overview instead of Quick access."),
+    ("tweak.explorer.launch_to_pc.effect", "Keine.", "None."),
+    ("tweak.explorer.end_task.name", "„Task beenden“ im Rechtsklick", "“End task” on right-click"),
+    ("tweak.explorer.end_task.description", "Ein Rechtsklick auf ein Programm in der Taskleiste bietet an, es sofort zu beenden — ohne Umweg über den Task-Manager.", "Right-clicking a program in the taskbar offers to end it right away — without going through Task Manager."),
+    ("tweak.explorer.end_task.effect", "Ein beendetes Programm speichert nicht. Mit Bedacht verwenden.", "An ended program does not save. Use with care."),
+    ("tweak.taskbar.align_left.name", "Taskleiste linksbündig", "Left-align the taskbar"),
+    ("tweak.taskbar.align_left.description", "Die Symbole beginnen wieder links statt in der Mitte.", "Icons start on the left again instead of in the centre."),
+    ("tweak.taskbar.align_left.effect", "Keine.", "None."),
+    ("tweak.taskbar.hide_search.name", "Suchfeld ausblenden", "Hide the search box"),
+    ("tweak.taskbar.hide_search.description", "Das breite Suchfeld verschwindet aus der Taskleiste und gibt Platz frei.", "The wide search box disappears from the taskbar and frees up space."),
+    ("tweak.taskbar.hide_search.effect", "Die Suche bleibt über die Windows-Taste erreichbar.", "Search remains available via the Windows key."),
+    ("tweak.taskbar.hide_taskview.name", "Task-Ansicht ausblenden", "Hide Task View"),
+    ("tweak.taskbar.hide_taskview.description", "Das Symbol für die Task-Ansicht verschwindet aus der Taskleiste.", "The Task View icon disappears from the taskbar."),
+    ("tweak.taskbar.hide_taskview.effect", "Die Funktion bleibt über Windows-Taste + Tab erreichbar.", "The feature remains available via Windows key + Tab."),
+    ("tweak.taskbar.no_bing.name", "Keine Websuche im Startmenü", "No web search in the Start menu"),
+    ("tweak.taskbar.no_bing.description", "Das Startmenü durchsucht nur noch Ihren Rechner und schickt Ihre Eingaben nicht mehr an Bing.", "The Start menu only searches your computer and no longer sends what you type to Bing."),
+    ("tweak.taskbar.no_bing.effect", "Keine Websuchergebnisse mehr im Startmenü.", "No more web results in the Start menu."),
+    ("tweak.performance.game_dvr.name", "Spielaufzeichnung abschalten", "Turn off game recording"),
+    ("tweak.performance.game_dvr.description", "Die Hintergrundaufzeichnung der Xbox Game Bar wird beendet. Sie kostet in Spielen spürbar Leistung.", "Background recording by the Xbox Game Bar is stopped. It costs noticeable performance in games."),
+    ("tweak.performance.game_dvr.effect", "„Letzte 30 Sekunden aufzeichnen“ funktioniert nicht mehr.", "“Record the last 30 seconds” no longer works."),
+    ("tweak.performance.fast_startup.name", "Schnellstart abschalten", "Turn off Fast Startup"),
+    ("tweak.performance.fast_startup.description", "Windows fährt beim Herunterfahren wirklich herunter, statt einen Ruhezustand zu schreiben. Hilft bei Treiberproblemen und ist für Dual-Boot nötig.", "Windows really shuts down instead of writing a hibernation file. Helps with driver problems and is necessary for dual-boot."),
+    ("tweak.performance.fast_startup.effect", "Der Rechner startet einige Sekunden langsamer.", "The computer starts a few seconds slower."),
+    ("tweak.system.long_paths.name", "Lange Dateipfade erlauben", "Allow long file paths"),
+    ("tweak.system.long_paths.description", "Hebt die alte Grenze von 260 Zeichen auf. Nützlich bei tief verschachtelten Projektordnern.", "Lifts the old 260-character limit. Useful for deeply nested project folders."),
+    ("tweak.system.long_paths.effect", "Ältere Programme kommen mit langen Pfaden trotzdem nicht zurecht.", "Older programs still cannot handle long paths."),
+    ("tweak.system.verbose_status.name", "Ausführliche Statusmeldungen", "Detailed status messages"),
+    ("tweak.system.verbose_status.description", "Beim Starten und Herunterfahren zeigt Windows, was es gerade tut, statt nur „Wird vorbereitet“.", "During startup and shutdown Windows shows what it is doing instead of just “Getting things ready”."),
+    ("tweak.system.verbose_status.effect", "Nützlich bei hängendem Herunterfahren.", "Useful when shutdown hangs."),
+
     // --- CLI -------------------------------------------------------------
     ("cli.description", "Plane – schlanker PC-Cleaner für Windows", "Plane – lightweight PC cleaner for Windows"),
     ("cli.scanning", "Analysiere", "Analyzing"),
@@ -381,6 +463,73 @@ mod tests {
                     "Englische Übersetzung fehlt: {schluessel}"
                 );
             }
+        }
+    }
+
+    #[test]
+    fn jeder_tweak_ist_vollstaendig_uebersetzt() {
+        use crate::engine::tweaks;
+
+        for tweak in tweaks::TWEAKS {
+            for schluessel in [
+                tweak.i18n_name(),
+                tweak.i18n_description(),
+                tweak.i18n_effect(),
+            ] {
+                assert_ne!(
+                    t("de", &schluessel),
+                    schluessel,
+                    "Deutsch fehlt: {schluessel}"
+                );
+                assert_ne!(
+                    t("en", &schluessel),
+                    schluessel,
+                    "Englisch fehlt: {schluessel}"
+                );
+            }
+        }
+
+        for gruppe in tweaks::TweakGroup::ALL {
+            let key = gruppe.i18n_key();
+            assert_ne!(t("de", &key), key);
+            assert_ne!(t("en", &key), key);
+        }
+    }
+
+    #[test]
+    fn jede_nebenwirkung_ist_benannt() {
+        use crate::engine::tweaks;
+
+        // Ein Tweak ohne benannte Nebenwirkung ist ein Tweak, den der Nutzer
+        // nicht beurteilen kann.
+        for tweak in tweaks::TWEAKS {
+            let wirkung = t("de", &tweak.i18n_effect());
+            assert!(
+                wirkung.len() > 4,
+                "{}: Nebenwirkung zu knapp: {wirkung}",
+                tweak.key
+            );
+        }
+    }
+
+    #[test]
+    fn jedes_deinstallationsziel_ist_uebersetzt() {
+        for schluessel in [
+            "uninstall.protected.runtime",
+            "uninstall.protected.security",
+            "uninstall.protected.driver",
+            "uninstall.protected.update",
+            "uninstall.protected.system",
+            "uninstall.protected.self",
+            "uninstall.protected.noremove",
+            "uninstall.protected.no_uninstaller",
+            "uninstall.source.machine",
+            "uninstall.source.machine32",
+            "uninstall.source.user",
+            "uninstall.source.store",
+        ] {
+            assert_ne!(t("de", schluessel), schluessel, "fehlt: {schluessel}");
+            assert_ne!(t("en", schluessel), schluessel, "fehlt: {schluessel}");
         }
     }
 

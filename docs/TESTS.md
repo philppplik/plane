@@ -19,7 +19,7 @@ python -m pytest
 ```
 
 Erwarteter Zustand: **beide Suiten grün**, ohne übersprungene oder erwartet
-fehlschlagende Tests. 244 Rust-Testfälle, 55 Python-Testfälle, zusammen unter
+fehlschlagende Tests. 299 Rust-Testfälle, 55 Python-Testfälle, zusammen unter
 30 Sekunden.
 
 ### Voraussetzungen
@@ -45,6 +45,8 @@ Element-ID, die im Markup fehlt.
 ```
 src-tauri/src/engine/*.rs         Engine: Katalog, Scan, Clean, Registry …
 src-tauri/src/cli/*.rs            Kommandozeile: Argumente, Tabellen, TUI-Zustand
+src-tauri/src/engine/uninstall.rs Schutzregeln, Kommandozerlegung, Exitcodes
+src-tauri/src/engine/tweaks.rs    Katalog, Journal, Zustandserkennung
 src-tauri/src/{i18n,state,commands}.rs
 
 tests/test_backend_contract.py    Commands, Katalog, Tauri-Konfiguration, Hygiene

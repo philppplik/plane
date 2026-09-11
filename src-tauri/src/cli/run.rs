@@ -138,6 +138,18 @@ pub fn ausfuehren(cli: Cli) -> Exitcode {
             let ausgabe = Ausgabe::neu(lang, cli.no_color, json);
             melde(deinstallieren(&ausgabe, &id, yes, quiet), &ausgabe)
         }
+        Some(Befehl::Tweaks {
+            on,
+            off,
+            revert,
+            json,
+        }) => {
+            let ausgabe = Ausgabe::neu(lang, cli.no_color, json);
+            melde(
+                tweaks(&ausgabe, on.as_deref(), off.as_deref(), revert.as_deref()),
+                &ausgabe,
+            )
+        }
         Some(Befehl::Tui) => starte_tui(&lang, cli.no_color),
         // Ohne Unterbefehl ist die Oberfläche gemeint – aber nur, wenn
         // jemand zuschaut. In einer Pipeline wäre das eine Falle.
@@ -608,6 +620,103 @@ fn deinstallieren(
     } else {
         Exitcode::Fehlgeschlagen
     })
+}
+
+/// Windows-Einstellungen anzeigen oder ändern.
+fn tweaks(
+    ausgabe: &Ausgabe,
+    ein: Option<&str>,
+    aus: Option<&str>,
+    zurueck: Option<&str>,
+) -> Result<Exitcode, Bedienfehler> {
+    use engine::tweaks;
+
+    // Änderungen zuerst – danach wird der neue Zustand angezeigt.
+    for (schluessel, aktion) in [(ein, Some(true)), (aus, Some(false)), (zurueck, None)] {
+        let Some(key) = schluessel else { continue };
+
+        if tweaks::tweak_by_key(key).is_none() {
+            return Err(Bedienfehler(format!(
+                "Unbekannter Punkt: {key}. `plane-cli tweaks` zeigt die verfügbaren."
+            )));
+        }
+
+        let ergebnis = match aktion {
+            Some(wert) => tweaks::anwenden(key, wert, &konfigurationsordner()),
+            None => tweaks::zuruecknehmen(key, &konfigurationsordner()),
+        };
+
+        match ergebnis {
+            Ok(_) => {
+                let meldung = if aktion.is_none() {
+                    "tweak.reverted"
+                } else {
+                    "tweak.applied"
+                };
+                ausgabe.zeile(&ausgabe.stil.akzent(&i18n::t(&ausgabe.lang, meldung)));
+            }
+            Err(fehler) => {
+                ausgabe.zeile(&ausgabe.stil.fehler(&text::meldung(&ausgabe.lang, &fehler)));
+                return Ok(Exitcode::Fehlgeschlagen);
+            }
+        }
+    }
+
+    let status = tweaks::status_aller();
+
+    if ausgabe.json {
+        println!("{}", serde_json::to_string(&status).unwrap_or_default());
+        return Ok(Exitcode::Erfolg);
+    }
+
+    let mut tabelle = table::Tabelle::neu(
+        &["SCHLÜSSEL", "ZUSTAND", "NAME", "HINWEIS"],
+        &[
+            table::Ausrichtung::Links,
+            table::Ausrichtung::Links,
+            table::Ausrichtung::Links,
+            table::Ausrichtung::Links,
+        ],
+    );
+
+    for eintrag in &status {
+        let zustand = match eintrag.state {
+            tweaks::TweakState::On => i18n::t(&ausgabe.lang, "tweaks.state.on"),
+            tweaks::TweakState::Off => i18n::t(&ausgabe.lang, "tweaks.state.off"),
+            tweaks::TweakState::Mixed => i18n::t(&ausgabe.lang, "tweaks.state.mixed"),
+        };
+
+        let mut hinweise: Vec<String> = Vec::new();
+        if eintrag.unsupported {
+            hinweise.push(i18n::t(&ausgabe.lang, "tweak.unsupported"));
+        }
+        if eintrag.managed {
+            hinweise.push(i18n::t(&ausgabe.lang, "tweak.managed"));
+        }
+        if eintrag.requires_admin && !engine::is_admin() {
+            hinweise.push(i18n::t(&ausgabe.lang, "risk.needs_admin"));
+        }
+
+        tabelle.zeile(vec![
+            eintrag.key.clone(),
+            zustand,
+            text::kuerzen(
+                &i18n::t(&ausgabe.lang, &format!("tweak.{}.name", eintrag.key)),
+                40,
+            ),
+            hinweise.join(", "),
+        ]);
+    }
+
+    ausgabe.tabelle(&tabelle);
+    ausgabe.zeile("");
+    ausgabe.zeile(
+        &ausgabe
+            .stil
+            .gedaempft(&i18n::t(&ausgabe.lang, "tweaks.omitted")),
+    );
+
+    Ok(Exitcode::Erfolg)
 }
 
 fn starte_tui(lang: &str, no_color: bool) -> Exitcode {

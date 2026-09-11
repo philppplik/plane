@@ -67,6 +67,10 @@ pub fn run() {
             // Programme
             commands::list_programs,
             commands::uninstall_program,
+            // Windows-Einstellungen
+            commands::list_tweaks,
+            commands::set_tweak,
+            commands::revert_tweak,
         ])
         .run(tauri::generate_context!())
         .expect("Fehler beim Starten der Tauri-Anwendung");

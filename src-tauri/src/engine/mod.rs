@@ -12,6 +12,7 @@
 //! log       – Nachvollziehbarkeit der Läufe
 //! elevation – Neustart mit Administratorrechten
 //! uninstall – Programme auflisten und deinstallieren
+//! tweaks    – kuratierte Windows-Einstellungen, umkehrbar
 //! registry  – Registry-Analyse mit Sicherung
 //! recyclebin/installers – Sonderfälle mit eigener Logik
 //! runtime   – Abbruch, Fortschritt, Rechte, Prozesse
@@ -33,6 +34,7 @@ pub mod recyclebin;
 pub mod registry;
 pub mod runtime;
 pub mod scan;
+pub mod tweaks;
 pub mod types;
 pub mod uninstall;
 

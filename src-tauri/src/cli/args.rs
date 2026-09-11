@@ -138,6 +138,21 @@ pub enum Befehl {
         #[arg(long)]
         json: bool,
     },
+    /// Windows-Einstellungen anzeigen und ändern.
+    Tweaks {
+        /// Einen Tweak einschalten.
+        #[arg(long, value_name = "SCHLUESSEL")]
+        on: Option<String>,
+        /// Einen Tweak ausschalten.
+        #[arg(long, value_name = "SCHLUESSEL")]
+        off: Option<String>,
+        /// Die letzte Änderung eines Tweaks zurücknehmen.
+        #[arg(long, value_name = "SCHLUESSEL")]
+        revert: Option<String>,
+        /// Ausgabe als JSON.
+        #[arg(long)]
+        json: bool,
+    },
     /// Die textbasierte Oberfläche starten.
     Tui,
 }
