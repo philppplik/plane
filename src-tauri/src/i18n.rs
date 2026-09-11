@@ -93,6 +93,23 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     ("clean.summary", "{0} freigegeben, {1} Einträge entfernt", "{0} freed, {1} items removed"),
     ("clean.dry_run_summary", "Simulation: {0} würden freigegeben ({1} Einträge)", "Simulation: {0} would be freed ({1} items)"),
     ("clean.registry_backup", "Registry gesichert unter {0}", "Registry backed up to {0}"),
+    ("clean.locked", "{0} Einträge waren in Benutzung und bleiben erhalten", "{0} items were in use and were kept"),
+    ("clean.locked_hint", "Das ist normal – ein laufendes Programm hält seine Dateien offen. Administratorrechte ändern daran nichts; schließen Sie das Programm und starten Sie erneut.", "This is normal – a running program keeps its files open. Administrator rights do not help; close the program and run again."),
+    ("clean.denied", "{0} Einträge brauchten höhere Rechte", "{0} items needed higher privileges"),
+    ("clean.denied_hint", "Mit Administratorrechten neu starten, um diese Einträge zu entfernen.", "Restart with administrator rights to remove these items."),
+    ("clean.log_written", "Protokoll: {0}", "Log: {0}"),
+
+    // --- Administratorrechte ---------------------------------------------
+    ("admin.restart", "Als Administrator neu starten", "Restart as administrator"),
+    ("admin.restart_hint", "Windows fragt dabei nach Ihrer Zustimmung. Plane startet neu; nicht gespeicherte Auswahl geht verloren.", "Windows will ask for your consent. Plane restarts; an unsaved selection is lost."),
+    ("admin.already", "Plane läuft bereits mit Administratorrechten.", "Plane is already running with administrator rights."),
+    ("admin.failed", "Neustart als Administrator abgebrochen oder fehlgeschlagen.", "Restart as administrator was cancelled or failed."),
+
+    // --- Protokoll --------------------------------------------------------
+    ("log.title", "Protokoll", "Log"),
+    ("log.open", "Protokoll öffnen", "Open log"),
+    ("log.hint", "Jeder Lauf wird mitgeschrieben – hilfreich, wenn etwas nicht wie erwartet lief.", "Every run is recorded – useful when something did not go as expected."),
+    ("log.none", "Noch kein Protokoll vorhanden.", "No log yet."),
 
     // --- Bestätigung -----------------------------------------------------
     ("confirm.title", "Bestätigung erforderlich", "Confirmation required"),

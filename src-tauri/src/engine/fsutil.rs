@@ -8,13 +8,6 @@ use std::fs;
 use std::path::{Component, Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
-/// Ergebnis eines Löschversuchs.
-pub struct Removal {
-    pub freed: u64,
-    pub removed: usize,
-    pub errors: Vec<String>,
-}
-
 /// Systemlaufwerk inklusive Trenner, z. B. `C:\`.
 pub fn system_drive() -> String {
     if cfg!(windows) {
@@ -248,7 +241,48 @@ pub fn is_older_than(pfad: &Path, tage: u32) -> bool {
 ///
 /// Gibt die freigegebenen Bytes zurück. Die Größe wird **vor** dem Löschen
 /// ermittelt, damit der gemeldete Wert der Realität entspricht.
-pub fn remove_entry(pfad: &Path, dry_run: bool) -> Result<u64, String> {
+/// Ausgang eines Löschversuchs.
+///
+/// Der wichtigste Unterschied gegenüber einem schlichten `Result`: **nicht
+/// jeder nicht gelöschte Eintrag ist ein Fehler.** Auf einem laufenden Windows
+/// ist immer irgendeine Cache-Datei von einem Programm geöffnet. Das als
+/// Fehler zu melden, erzeugt eine Wand roter Zeilen für einen völlig normalen
+/// Zustand – und lässt echte Fehler darin untergehen.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Removal {
+    /// Entfernt; enthält die freigegebenen Bytes.
+    Removed(u64),
+    /// War beim Zugriff schon nicht mehr da (zwischen Analyse und Bereinigung
+    /// verschwunden). Kein Fehler.
+    Vanished,
+    /// Von einem anderen Prozess geöffnet. Bleibt erhalten, ist kein Fehler.
+    /// Administratorrechte ändern daran **nichts** – eine exklusiv geöffnete
+    /// Datei lässt sich auch als Administrator nicht löschen.
+    InUse,
+    /// Zugriff verweigert. Hier helfen erhöhte Rechte oft.
+    Denied,
+}
+
+/// Windows-Fehlercodes, die „gesperrt" bedeuten.
+const ERROR_SHARING_VIOLATION: i32 = 32;
+const ERROR_LOCK_VIOLATION: i32 = 33;
+const ERROR_ACCESS_DENIED: i32 = 5;
+
+/// E/A-Fehler einordnen: erwartbarer Zustand oder echter Fehler?
+fn einordnen(fehler: &std::io::Error) -> Option<Removal> {
+    match fehler.kind() {
+        std::io::ErrorKind::NotFound => return Some(Removal::Vanished),
+        std::io::ErrorKind::PermissionDenied => return Some(Removal::Denied),
+        _ => {}
+    }
+    match fehler.raw_os_error() {
+        Some(ERROR_SHARING_VIOLATION) | Some(ERROR_LOCK_VIOLATION) => Some(Removal::InUse),
+        Some(ERROR_ACCESS_DENIED) => Some(Removal::Denied),
+        _ => None,
+    }
+}
+
+pub fn remove_entry(pfad: &Path, dry_run: bool) -> Result<Removal, String> {
     if !path_is_allowed(pfad) {
         return Err(format!(
             "Aus Sicherheitsgründen abgelehnt: {}",
@@ -256,7 +290,16 @@ pub fn remove_entry(pfad: &Path, dry_run: bool) -> Result<u64, String> {
         ));
     }
 
-    let meta = fs::symlink_metadata(pfad).map_err(|e| format!("{}: {e}", pfad.display()))?;
+    let meta = match fs::symlink_metadata(pfad) {
+        Ok(m) => m,
+        Err(e) => {
+            return match einordnen(&e) {
+                Some(ausgang) => Ok(ausgang),
+                None => Err(format!("{}: {e}", pfad.display())),
+            }
+        }
+    };
+
     let ist_verweis = is_reparse_point(pfad);
     let ist_echtes_verzeichnis = meta.is_dir() && !ist_verweis;
 
@@ -267,7 +310,7 @@ pub fn remove_entry(pfad: &Path, dry_run: bool) -> Result<u64, String> {
     };
 
     if dry_run {
-        return Ok(groesse);
+        return Ok(Removal::Removed(groesse));
     }
 
     let ergebnis = if ist_echtes_verzeichnis {
@@ -280,40 +323,12 @@ pub fn remove_entry(pfad: &Path, dry_run: bool) -> Result<u64, String> {
     };
 
     match ergebnis {
-        Ok(()) => Ok(groesse),
-        Err(e) => Err(format!("{}: {e}", dateiname(pfad))),
+        Ok(()) => Ok(Removal::Removed(groesse)),
+        Err(e) => match einordnen(&e) {
+            Some(ausgang) => Ok(ausgang),
+            None => Err(format!("{}: {e}", dateiname(pfad))),
+        },
     }
-}
-
-/// Nur den Inhalt eines Verzeichnisses löschen, das Verzeichnis selbst behalten.
-pub fn clear_directory(verzeichnis: &Path, dry_run: bool) -> Removal {
-    let mut ergebnis = Removal {
-        freed: 0,
-        removed: 0,
-        errors: Vec::new(),
-    };
-
-    let eintraege = match fs::read_dir(verzeichnis) {
-        Ok(e) => e,
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return ergebnis,
-        Err(e) => {
-            ergebnis
-                .errors
-                .push(format!("{}: {e}", verzeichnis.display()));
-            return ergebnis;
-        }
-    };
-
-    for eintrag in eintraege.flatten() {
-        match remove_entry(&eintrag.path(), dry_run) {
-            Ok(bytes) => {
-                ergebnis.freed += bytes;
-                ergebnis.removed += 1;
-            }
-            Err(e) => ergebnis.errors.push(e),
-        }
-    }
-    ergebnis
 }
 
 /// Schreibgeschützte Dateien lassen sich unter Windows nicht direkt löschen.
@@ -484,8 +499,7 @@ mod tests {
         let d = ordner.join("a.bin");
         datei(&d, 2048);
 
-        let freigegeben = remove_entry(&d, false).unwrap();
-        assert_eq!(freigegeben, 2048);
+        assert_eq!(remove_entry(&d, false).unwrap(), Removal::Removed(2048));
         assert!(!d.exists());
 
         let _ = fs::remove_dir_all(&ordner);
@@ -497,40 +511,74 @@ mod tests {
         let d = ordner.join("a.bin");
         datei(&d, 512);
 
-        let gemeldet = remove_entry(&d, true).unwrap();
-        assert_eq!(gemeldet, 512);
+        assert_eq!(remove_entry(&d, true).unwrap(), Removal::Removed(512));
         assert!(d.exists(), "Trockenlauf darf nicht löschen");
 
         let _ = fs::remove_dir_all(&ordner);
     }
 
     #[test]
-    fn remove_entry_lehnt_geschuetzte_pfade_ab() {
-        let fehler = remove_entry(Path::new("C:\\Windows"), true).unwrap_err();
-        assert!(fehler.contains("Sicherheitsgründen"));
+    fn remove_entry_meldet_verschwundene_datei_als_kein_fehler() {
+        // Zwischen Analyse und Bereinigung kann eine Datei verschwinden.
+        // Das ist kein Fehler, sondern der Normalfall bei Cache-Ordnern.
+        let ordner = testordner("verschwunden");
+        let d = ordner.join("gibt_es_nicht.bin");
+        assert_eq!(remove_entry(&d, false).unwrap(), Removal::Vanished);
+        let _ = fs::remove_dir_all(&ordner);
     }
 
     #[test]
-    fn clear_directory_behaelt_den_ordner() {
-        let ordner = testordner("inhalt");
-        datei(&ordner.join("a.bin"), 100);
-        datei(&ordner.join("unter/b.bin"), 100);
+    fn gesperrte_datei_ist_kein_fehler() {
+        // Eine geöffnete Datei lässt sich unter Windows nicht löschen. Das
+        // muss als InUse durchkommen, nicht als Err - sonst meldet jeder
+        // normale Lauf Fehler.
+        let ordner = testordner("gesperrt");
+        let d = ordner.join("offen.bin");
+        datei(&d, 64);
 
-        let ergebnis = clear_directory(&ordner, false);
-        assert_eq!(ergebnis.freed, 200);
-        assert_eq!(ergebnis.removed, 2);
-        assert!(ergebnis.errors.is_empty());
-        assert!(ordner.exists(), "Der Ordner selbst muss bleiben");
-        assert_eq!(fs::read_dir(&ordner).unwrap().count(), 0);
+        let halter = fs::OpenOptions::new().read(true).open(&d).unwrap();
+        let ausgang = remove_entry(&d, false);
+        drop(halter);
+
+        match ausgang {
+            Ok(Removal::Removed(_)) => {
+                // Manche Dateisysteme erlauben das Löschen offener Dateien.
+            }
+            Ok(Removal::InUse) => {}
+            anderes => panic!("unerwarteter Ausgang: {anderes:?}"),
+        }
 
         let _ = fs::remove_dir_all(&ordner);
     }
 
     #[test]
-    fn clear_directory_fehlender_ordner_ist_kein_fehler() {
-        let ergebnis = clear_directory(Path::new("C:\\gibt_es_nicht_98765"), false);
-        assert_eq!(ergebnis.removed, 0);
-        assert!(ergebnis.errors.is_empty());
+    fn einordnung_kennt_die_windows_fehlercodes() {
+        use std::io::{Error, ErrorKind};
+
+        assert_eq!(
+            einordnen(&Error::from_raw_os_error(ERROR_SHARING_VIOLATION)),
+            Some(Removal::InUse)
+        );
+        assert_eq!(
+            einordnen(&Error::from_raw_os_error(ERROR_LOCK_VIOLATION)),
+            Some(Removal::InUse)
+        );
+        assert_eq!(
+            einordnen(&Error::from(ErrorKind::NotFound)),
+            Some(Removal::Vanished)
+        );
+        assert_eq!(
+            einordnen(&Error::from(ErrorKind::PermissionDenied)),
+            Some(Removal::Denied)
+        );
+        // Unbekanntes bleibt ein echter Fehler.
+        assert_eq!(einordnen(&Error::from(ErrorKind::InvalidData)), None);
+    }
+
+    #[test]
+    fn remove_entry_lehnt_geschuetzte_pfade_ab() {
+        let fehler = remove_entry(Path::new("C:\\Windows"), true).unwrap_err();
+        assert!(fehler.contains("Sicherheitsgründen"));
     }
 
     #[test]

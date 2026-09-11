@@ -82,6 +82,15 @@ fn terminalbreite() -> usize {
 /// Vor jeder Registry-Änderung legt die Engine dort eine `.reg`-Datei ab. Der
 /// Ordner liegt im Benutzerprofil, damit die Sicherung auch ohne
 /// Administratorrechte geschrieben werden kann.
+/// Konfigurationsordner von Plane – dieselbe Stelle, die auch die grafische
+/// Anwendung nutzt, damit beide in dasselbe Protokoll schreiben.
+pub fn konfigurationsordner() -> PathBuf {
+    match std::env::var("APPDATA") {
+        Ok(pfad) => PathBuf::from(pfad).join("com.ppaul.plane"),
+        Err(_) => std::env::temp_dir().join("plane"),
+    }
+}
+
 pub fn sicherungsordner() -> PathBuf {
     let basis = std::env::var_os("LOCALAPPDATA")
         .map(PathBuf::from)
@@ -264,6 +273,7 @@ fn bereinigen(
     let ctx = fortschritt_anhaengen(ctx, ausgabe);
     let bericht = engine::clean(&anfrage, &sicherungsordner(), &ctx);
     fortschritt_abschliessen(ausgabe);
+    engine::log::clean(&konfigurationsordner(), &bericht, trockenlauf);
 
     if ausgabe.json {
         println!("{}", serde_json::to_string(&bericht).unwrap_or_default());
@@ -281,6 +291,12 @@ fn clean_ausgeben(ausgabe: &Ausgabe, bericht: &CleanReport, trockenlauf: bool) {
         bericht,
         trockenlauf,
     )));
+    // Gesperrte Dateien und fehlende Rechte sind keine Fehler, aber der
+    // Nutzer soll wissen, warum weniger entfernt wurde als gefunden.
+    for hinweis in table::clean_hinweise(&ausgabe.lang, bericht) {
+        ausgabe.zeile(&ausgabe.stil.gedaempft(&hinweis));
+    }
+
     if let Some(pfad) = &bericht.registry_backup {
         ausgabe.zeile(&i18n::format(
             &ausgabe.lang,

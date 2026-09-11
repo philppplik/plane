@@ -9,6 +9,8 @@
 //!
 //! fsutil    – Pfade, Globs, Größen, sicheres Löschen
 //! process   – externe Befehle ohne Shell
+//! log       – Nachvollziehbarkeit der Läufe
+//! elevation – Neustart mit Administratorrechten
 //! registry  – Registry-Analyse mit Sicherung
 //! recyclebin/installers – Sonderfälle mit eigener Logik
 //! runtime   – Abbruch, Fortschritt, Rechte, Prozesse
@@ -21,8 +23,10 @@
 
 pub mod catalog;
 pub mod clean;
+pub mod elevation;
 pub mod fsutil;
 pub mod installers;
+pub mod log;
 pub mod process;
 pub mod recyclebin;
 pub mod registry;
@@ -32,6 +36,7 @@ pub mod types;
 
 pub use catalog::{default_selection, target_by_key, targets_in, TARGETS};
 pub use clean::clean;
+pub use elevation::{neu_starten_als_admin, neustart_sinnvoll, Elevation};
 pub use runtime::{is_admin, running_processes, CancelToken, RunContext};
 pub use scan::scan;
 pub use types::{

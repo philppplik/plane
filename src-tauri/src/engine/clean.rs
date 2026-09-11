@@ -16,6 +16,7 @@ use std::time::Instant;
 
 use super::catalog;
 use super::fsutil;
+use super::fsutil::Removal;
 use super::process;
 use super::recyclebin;
 use super::registry;
@@ -70,6 +71,8 @@ pub fn clean(anfrage: &CleanRequest, backup_dir: &Path, ctx: &RunContext) -> Cle
         success: fehlgeschlagen.is_empty() && !abgebrochen,
         total_freed: ergebnisse.iter().map(|t| t.freed).sum(),
         total_removed: ergebnisse.iter().map(|t| t.removed_items).sum(),
+        total_locked: ergebnisse.iter().map(|t| t.locked_items).sum(),
+        total_denied: ergebnisse.iter().map(|t| t.denied_items).sum(),
         error: if fehlgeschlagen.is_empty() {
             String::new()
         } else {
@@ -101,6 +104,8 @@ fn clean_target(
         skip_reason: String::new(),
         freed: 0,
         removed_items: 0,
+        locked_items: 0,
+        denied_items: 0,
         errors: Vec::new(),
     };
 
@@ -165,13 +170,7 @@ fn clean_target(
                             .with_path(pfad.to_string_lossy().to_string()),
                     );
 
-                    match fsutil::remove_entry(&pfad, anfrage.dry_run) {
-                        Ok(bytes) => {
-                            ergebnis.freed += bytes;
-                            ergebnis.removed_items += 1;
-                        }
-                        Err(e) => ergebnis.errors.push(e),
-                    }
+                    verbuche(&mut ergebnis, fsutil::remove_entry(&pfad, anfrage.dry_run));
                     gesehen.insert(pfad);
                 }
             }
@@ -215,13 +214,7 @@ fn clean_target(
                     continue;
                 }
                 ctx.report(Progress::new("clean", ziel, 0, 1).with_path(pfad.clone()));
-                match fsutil::remove_entry(&p, anfrage.dry_run) {
-                    Ok(bytes) => {
-                        ergebnis.freed += bytes;
-                        ergebnis.removed_items += 1;
-                    }
-                    Err(e) => ergebnis.errors.push(e),
-                }
+                verbuche(&mut ergebnis, fsutil::remove_entry(&p, anfrage.dry_run));
             }
         }
 
@@ -266,6 +259,26 @@ fn clean_target(
 
     ergebnis.ok = ergebnis.errors.is_empty();
     ergebnis
+}
+
+/// Ausgang eines Löschversuchs im Ergebnis verbuchen.
+///
+/// Der Kern der Fehlerbehandlung: gesperrte Dateien und fehlende Rechte werden
+/// **gezählt**, nicht als Fehler gemeldet. Andernfalls erzeugt jeder normale
+/// Lauf eine Wand roter Zeilen für einen völlig erwartbaren Zustand – und
+/// echte Fehler gehen darin unter.
+fn verbuche(ergebnis: &mut TargetClean, ausgang: Result<Removal, String>) {
+    match ausgang {
+        Ok(Removal::Removed(bytes)) => {
+            ergebnis.freed += bytes;
+            ergebnis.removed_items += 1;
+        }
+        Ok(Removal::InUse) => ergebnis.locked_items += 1,
+        Ok(Removal::Denied) => ergebnis.denied_items += 1,
+        // War schon weg – zwischen Analyse und Bereinigung verschwunden.
+        Ok(Removal::Vanished) => {}
+        Err(fehler) => ergebnis.errors.push(fehler),
+    }
 }
 
 /// `true`, wenn der Pfad zur Auswahl gehört. Leere Auswahl = alles.

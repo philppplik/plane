@@ -60,6 +60,10 @@ pub fn run() {
             commands::scan,
             commands::clean,
             commands::cancel_run,
+            // Rechte und Protokoll
+            commands::restart_as_admin,
+            commands::get_log,
+            commands::get_log_path,
         ])
         .run(tauri::generate_context!())
         .expect("Fehler beim Starten der Tauri-Anwendung");

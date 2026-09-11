@@ -284,6 +284,37 @@ pub fn clean_zusammenfassung(lang: &str, bericht: &CleanReport, trockenlauf: boo
     crate::i18n::format(lang, schluessel, &[&bytes, &anzahl])
 }
 
+/// Hinweiszeilen zu übersprungenen Einträgen.
+///
+/// Gesperrte Dateien und fehlende Rechte sind keine Fehler, aber der Nutzer
+/// sollte wissen, dass nicht alles entfernt wurde – sonst wundert er sich über
+/// die Differenz zur Analyse.
+pub fn clean_hinweise(lang: &str, bericht: &CleanReport) -> Vec<String> {
+    let mut zeilen = Vec::new();
+
+    if bericht.total_locked > 0 {
+        zeilen.push(crate::i18n::format(
+            lang,
+            "clean.locked",
+            &[&bericht.total_locked.to_string()],
+        ));
+        zeilen.push(crate::i18n::t(lang, "clean.locked_hint"));
+    }
+
+    if bericht.total_denied > 0 {
+        zeilen.push(crate::i18n::format(
+            lang,
+            "clean.denied",
+            &[&bericht.total_denied.to_string()],
+        ));
+        if !crate::engine::is_admin() {
+            zeilen.push(crate::i18n::t(lang, "clean.denied_hint"));
+        }
+    }
+
+    zeilen
+}
+
 /// Satz mit Gesamtergebnis der Analyse.
 pub fn scan_zusammenfassung(lang: &str, bericht: &ScanReport) -> String {
     let bytes = format_bytes(bericht.total_size);
@@ -451,10 +482,14 @@ mod tests {
                 skip_reason: String::new(),
                 freed: 0,
                 removed_items: 0,
+                locked_items: 0,
+                denied_items: 0,
                 errors: vec!["clean.failed|Zugriff verweigert".into()],
             }],
             total_freed: 0,
             total_removed: 0,
+            total_locked: 0,
+            total_denied: 0,
             duration_ms: 0,
             cancelled: false,
             registry_backup: None,
@@ -472,6 +507,8 @@ mod tests {
             targets: Vec::new(),
             total_freed: 1024,
             total_removed: 3,
+            total_locked: 0,
+            total_denied: 0,
             duration_ms: 0,
             cancelled: false,
             registry_backup: None,

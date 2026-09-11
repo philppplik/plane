@@ -324,6 +324,17 @@ pub struct TargetClean {
     pub freed: u64,
     /// Anzahl entfernter Einträge.
     pub removed_items: usize,
+    /// Einträge, die ein anderes Programm geöffnet hielt.
+    ///
+    /// **Kein Fehler.** Auf einem laufenden Windows ist immer irgendeine
+    /// Cache-Datei in Benutzung. Administratorrechte ändern daran nichts.
+    #[serde(default)]
+    pub locked_items: usize,
+    /// Einträge, für die die Rechte nicht reichten. Hier hilft ein Start als
+    /// Administrator meistens.
+    #[serde(default)]
+    pub denied_items: usize,
+    /// Echte Fehler – alles, was keiner der erwartbaren Zustände ist.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub errors: Vec<String>,
 }
@@ -338,6 +349,8 @@ impl TargetClean {
             skip_reason: reason.into(),
             freed: 0,
             removed_items: 0,
+            locked_items: 0,
+            denied_items: 0,
             errors: Vec::new(),
         }
     }
@@ -350,6 +363,12 @@ pub struct CleanReport {
     pub targets: Vec<TargetClean>,
     pub total_freed: u64,
     pub total_removed: usize,
+    /// Summe der Einträge, die in Benutzung waren. Kein Fehler.
+    #[serde(default)]
+    pub total_locked: usize,
+    /// Summe der Einträge, für die die Rechte nicht reichten.
+    #[serde(default)]
+    pub total_denied: usize,
     pub duration_ms: u64,
     pub cancelled: bool,
     /// Pfad der angelegten Registry-Sicherung, falls Registry bereinigt wurde.

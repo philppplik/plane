@@ -414,9 +414,13 @@ pub async fn scan(
     token.reset();
     let ctx = run_context(&app, token);
 
-    tauri::async_runtime::spawn_blocking(move || engine::scan(&targets, &ctx))
+    let verzeichnis = config_dir(&app);
+    let bericht = tauri::async_runtime::spawn_blocking(move || engine::scan(&targets, &ctx))
         .await
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?;
+
+    engine::log::scan(&verzeichnis, &bericht);
+    Ok(bericht)
 }
 
 /// Ausgewählte Ziele bereinigen.
@@ -429,17 +433,75 @@ pub async fn clean(
     let token = cancel.inner().clone();
     token.reset();
     let ctx = run_context(&app, token);
-    let backup_dir = crate::state::backup_path(&config_dir(&app));
+    let verzeichnis = config_dir(&app);
+    let backup_dir = crate::state::backup_path(&verzeichnis);
+    let trockenlauf = request.dry_run;
 
-    tauri::async_runtime::spawn_blocking(move || engine::clean(&request, &backup_dir, &ctx))
-        .await
-        .map_err(|e| e.to_string())
+    let bericht =
+        tauri::async_runtime::spawn_blocking(move || engine::clean(&request, &backup_dir, &ctx))
+            .await
+            .map_err(|e| e.to_string())?;
+
+    engine::log::clean(&verzeichnis, &bericht, trockenlauf);
+    Ok(bericht)
 }
 
 /// Laufenden Vorgang abbrechen.
 #[tauri::command]
 pub fn cancel_run(cancel: State<'_, SharedCancel>) {
     cancel.cancel();
+}
+
+// ---------------------------------------------------------------------------
+// Rechte und Protokoll
+// ---------------------------------------------------------------------------
+
+/// Plane mit Administratorrechten neu starten.
+///
+/// Der aufrufende Prozess beendet sich, sobald der neue gestartet ist – sonst
+/// liefen zwei Instanzen nebeneinander. Lehnt der Nutzer die UAC-Rückfrage ab,
+/// passiert nichts und der Fehler kommt als Übersetzungsschlüssel zurück.
+#[tauri::command]
+pub fn restart_as_admin(app: AppHandle) -> Result<String, String> {
+    match engine::neu_starten_als_admin(&[]) {
+        engine::Elevation::Bereits => Ok("already".to_string()),
+        engine::Elevation::Gestartet => {
+            engine::log::notiz(&config_dir(&app), "NEUSTART als Administrator");
+            let handle = app.clone();
+            // Kurz warten, damit die Antwort das Frontend noch erreicht.
+            std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_millis(300));
+                handle.exit(0);
+            });
+            Ok("restarting".to_string())
+        }
+        engine::Elevation::Abgelehnt(grund) => {
+            eprintln!("Neustart als Administrator: {grund}");
+            Err("admin.failed".to_string())
+        }
+    }
+}
+
+/// Inhalt des Protokolls, neueste Zeilen zuletzt.
+#[tauri::command]
+pub fn get_log(app: AppHandle, lines: Option<usize>) -> Result<String, String> {
+    let pfad = engine::log::log_path(&config_dir(&app));
+    let Ok(inhalt) = std::fs::read_to_string(&pfad) else {
+        return Ok(String::new());
+    };
+
+    let grenze = lines.unwrap_or(200);
+    let zeilen: Vec<&str> = inhalt.lines().collect();
+    let anfang = zeilen.len().saturating_sub(grenze);
+    Ok(zeilen[anfang..].join("\n"))
+}
+
+/// Pfad der Protokolldatei – damit die Oberfläche ihn anzeigen kann.
+#[tauri::command]
+pub fn get_log_path(app: AppHandle) -> String {
+    engine::log::log_path(&config_dir(&app))
+        .to_string_lossy()
+        .to_string()
 }
 
 #[cfg(test)]
