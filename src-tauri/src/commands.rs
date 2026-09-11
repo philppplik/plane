@@ -609,6 +609,30 @@ pub fn get_log_path(app: AppHandle) -> String {
         .to_string()
 }
 
+/// Symbole zu mehreren Programmen auf einmal holen.
+///
+/// Bewusst ein eigener Command und nicht Teil von `list_programs`: das Lesen
+/// von rund 150 Symbolen aus ebenso vielen Dateien dauert spürbar. Die Liste
+/// erscheint deshalb sofort, die Bilder kommen einen Wimpernschlag später
+/// nach.
+///
+/// Die Antwort folgt der Reihenfolge der Anfrage; wo kein Symbol zu holen
+/// war, steht `null`. Ein fehlendes Symbol ist kein Fehler – verwaiste
+/// Einträge zeigen auf Dateien, die es längst nicht mehr gibt.
+#[tauri::command]
+pub async fn get_program_icons(
+    sources: Vec<String>,
+) -> Result<Vec<Option<engine::icons::ProgramIcon>>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        sources
+            .iter()
+            .map(|quelle| engine::icons::hole(quelle))
+            .collect()
+    })
+    .await
+    .map_err(|e| e.to_string())
+}
+
 // ---------------------------------------------------------------------------
 // Aktualisierungsprüfung
 // ---------------------------------------------------------------------------

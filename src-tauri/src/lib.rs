@@ -67,6 +67,7 @@ pub fn run() {
             // Programme
             commands::list_programs,
             commands::uninstall_program,
+            commands::get_program_icons,
             // Windows-Einstellungen
             commands::list_tweaks,
             commands::set_tweak,

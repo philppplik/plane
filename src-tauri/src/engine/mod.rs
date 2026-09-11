@@ -27,6 +27,7 @@ pub mod catalog;
 pub mod clean;
 pub mod elevation;
 pub mod fsutil;
+pub mod icons;
 pub mod installers;
 pub mod log;
 pub mod process;

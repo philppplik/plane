@@ -55,6 +55,9 @@ export const holeLaufwerk = () => rufe('get_disk_stats', undefined, null);
 export const holeSystem = () => rufe('get_system_info', undefined, null);
 export const holeZiele = () => rufe('list_targets', undefined, []);
 
+/** Liefert `"already"`, `"restarting"` – oder `null`, wenn abgelehnt. */
+export const starteAlsAdminNeu = () => rufe('restart_as_admin', undefined, null);
+
 // --- Analyse und Bereinigung ----------------------------------------------
 
 /** Leere Zielliste bedeutet für das Backend: gesamter Katalog. */
@@ -68,6 +71,14 @@ export const brichAb = () => rufe('cancel_run');
 // --- Programme -------------------------------------------------------------
 
 export const holeProgramme = () => rufe('list_programs', undefined, []);
+
+/**
+ * Symbole zu mehreren Programmen holen.
+ *
+ * Antwort in der Reihenfolge der Anfrage; `null`, wo keins zu holen war.
+ */
+export const holeProgrammsymbole = (sources) =>
+    rufe('get_program_icons', { sources }, []);
 
 /** `quiet` versucht eine Deinstallation ohne Dialog des Herstellers. */
 export const deinstalliere = (program, quiet) =>

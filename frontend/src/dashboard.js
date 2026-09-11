@@ -14,6 +14,7 @@
 import { $, el, zeige, setzeText } from './dom.js';
 import { t, tMeldung } from './i18n.js';
 import * as fmt from './format.js';
+import { schliesse as schliesseErgebnis } from './result.js';
 import {
     zustand,
     scanVon,
@@ -57,7 +58,8 @@ export function verdrahte(neueHaken) {
         };
         zeichne();
     });
-    $('result-close')?.addEventListener('click', () => zeige($('result-panel'), false));
+    $('result-close')?.addEventListener('click', schliesseErgebnis);
+    $('result-close-x')?.addEventListener('click', schliesseErgebnis);
 }
 
 /** Alles neu beschriften und zeichnen. */

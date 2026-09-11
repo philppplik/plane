@@ -52,7 +52,8 @@ Simulationsmodus zeigt jederzeit, was passieren *würde*.
 - **Fortschrittsanzeige** mit Prozentwert, aktuellem Ziel, laufender
   Byte-Summe und einem Abbrechen-Knopf, der auch wirkt
 - **Programme deinstallieren** — installierte Software auflisten und entfernen,
-  mit Schutz für Laufzeitpakete, Treiber und Systembestandteile
+  mit Programmsymbol, Größe und Herkunft, und mit Schutz für Laufzeitpakete,
+  Treiber und Systembestandteile
 - **Windows-Einstellungen** — 19 kuratierte, umkehrbare Punkte zu Datenschutz,
   Explorer, Taskleiste und Leistung
 - **Kommandozeile und TUI** für alles, was die Oberfläche kann
@@ -212,6 +213,7 @@ src-tauri/src/engine/clean.rs     LÖSCHEN, was ausgewählt wurde
 src-tauri/src/engine/uninstall.rs Programme auflisten und deinstallieren
 src-tauri/src/engine/tweaks.rs    Windows-Einstellungen, umkehrbar
 src-tauri/src/engine/update.rs    der einzige Netzwerkzugriff, standardmäßig aus
+src-tauri/src/engine/icons.rs     Programmsymbole aus .exe/.dll/.ico
 src-tauri/src/i18n.rs             alle Texte, Deutsch und Englisch
 src-tauri/src/commands.rs         Tauri-Brücke, keine Logik
 src-tauri/src/cli/                Kommandozeile und TUI

@@ -53,6 +53,9 @@ ctrlc = "3.5.2"
 #                     wo eine Firma TLS aufbricht.
 #   win-system-proxy  respektiert den im System eingetragenen Proxy.
 ureq = { version = "3.4.1", default-features = false, features = ["native-tls", "win-system-proxy"] }
+# Symbole der installierten Programme werden als rohe Bildpunkte an die
+# Oberfläche gereicht; base64 hält die Übertragung klein.
+base64 = "0.23.1"
 
 [dev-dependencies]
 # Nur fuer die Unit-Tests: die Tauri-Commands sind async.
@@ -69,5 +72,11 @@ panic = "abort"
 strip = true
 
 [target."cfg(windows)".dependencies]
-windows-sys = { version = "0.61.2", features = ["Win32_System_Registry", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.61.2", features = [
+    "Win32_System_Registry",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+    # Programmsymbole aus .exe/.dll/.ico lesen.
+    "Win32_Graphics_Gdi",
+] }
 winreg = "0.56.0"

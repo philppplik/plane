@@ -334,6 +334,12 @@ pub struct TargetClean {
     /// Administrator meistens.
     #[serde(default)]
     pub denied_items: usize,
+    /// Einträge, deren Durchlaufen Windows grundsätzlich verweigert.
+    ///
+    /// **Kein Fehler und mit Adminrechten nicht zu lösen.** Windows räumt
+    /// diese Ordner selbst auf; siehe [`super::fsutil::Removal::Blocked`].
+    #[serde(default)]
+    pub blocked_items: usize,
     /// Echte Fehler – alles, was keiner der erwartbaren Zustände ist.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub errors: Vec<String>,
@@ -351,6 +357,7 @@ impl TargetClean {
             removed_items: 0,
             locked_items: 0,
             denied_items: 0,
+            blocked_items: 0,
             errors: Vec::new(),
         }
     }
@@ -369,6 +376,9 @@ pub struct CleanReport {
     /// Summe der Einträge, für die die Rechte nicht reichten.
     #[serde(default)]
     pub total_denied: usize,
+    /// Summe der Einträge, die Windows grundsätzlich sperrt.
+    #[serde(default)]
+    pub total_blocked: usize,
     pub duration_ms: u64,
     pub cancelled: bool,
     /// Pfad der angelegten Registry-Sicherung, falls Registry bereinigt wurde.

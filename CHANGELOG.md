@@ -9,6 +9,26 @@ die Versionierung [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Hinzugefügt
 
+- **Programmsymbole** in der Programmliste. Gelesen wird `DisplayIcon` aus
+  der Registry; fehlt der Wert, dienen die Deinstallationsdatei oder die
+  größte `.exe` im Installationsordner als Ersatz. Die Symbole kommen in
+  einem zweiten Schritt nach, damit die Liste sofort steht.
+
+  Store-Pakete legen ihr Symbol im Paketmanifest ab und sind darüber nicht
+  erreichbar; sie zeigen ihren Anfangsbuchstaben. Das betrifft auf einem
+  typischen System die Mehrzahl der Einträge.
+- **Ergebnis einer Bereinigung als Dialog** statt als Abschnitt am
+  Seitenende. Neu darin: die Zähler für Einträge, die in Benutzung waren,
+  für die die Rechte fehlten oder die Windows selbst sperrt — jeweils mit
+  der Erklärung, was man dagegen tun kann. Diese Zahlen gab es bisher nur in
+  der Kommandozeile.
+- **Administratorrechte für Windows-Tweaks.** Punkte, die `HKEY_LOCAL_MACHINE`
+  schreiben, waren ohne Rechte wirkungslos gesperrt. Jetzt fragt Plane nach
+  und startet auf Wunsch mit Rechten neu — Windows zeigt dabei seine
+  UAC-Rückfrage. Einen einzelnen Registry-Zugriff nachträglich zu erhöhen
+  sieht Windows nicht vor; es geht nur über den Prozess.
+- **Schlanke Bildlaufleisten**, die sich dem hellen und dunklen
+  Erscheinungsbild anpassen.
 - **Suche nach neuen Versionen.** Plane kann bei GitHub nachsehen, ob eine
   neuere Veröffentlichung vorliegt — in der Oberfläche über
   **Einstellungen → Nach neuen Versionen suchen**, in der Kommandozeile über
@@ -35,10 +55,34 @@ die Versionierung [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Geändert
 
+- Der Reiter **„Einstellungen anpassen" heißt jetzt „Windows Tweaks"**. Zwei
+  Einträge mit „Einstellungen" im Namen, die verschiedene Dinge tun, waren
+  eine vermeidbare Stolperstelle.
+- Der Papierkorb wird über **`SHEmptyRecycleBinW`** geleert statt über
+  PowerShell. Der Aufruf ist rund eine Sekunde schneller, und Plane kommt
+  damit wieder ganz ohne Shell aus.
+- Eine Zeile in der Tweak-Liste wird beim Umschalten **einzeln** neu
+  gezeichnet. Vorher wurde die ganze Liste ersetzt; dabei fiel die Seitenhöhe
+  kurz auf null, der Browser klemmte die Bildlaufposition — und die Ansicht
+  sprang nach oben.
 - README und `SECURITY.md` sagten „kein Netzwerkcode, keine
   Aktualisierungsprüfung". Das stimmt so nicht mehr und steht jetzt genau da,
   wo es hingehört — mit der vollständigen Auskunft, was bei eingeschalteter
   Prüfung das Gerät verlässt.
+
+### Behoben
+
+- **Der Internet-Zwischenspeicher meldete einen Fehler.** Windows verweigert
+  das Durchlaufen von `INetCache\Content.IE5` grundsätzlich — jedem Prozess,
+  auch dem Administrator (`os error 448`). Das war als Fehlschlag gezählt und
+  rot angezeigt. Es ist jetzt ein eigener, erklärter Zustand neben „in
+  Benutzung" und „Rechte fehlen".
+- **Ein leerer Papierkorb sah aus wie ein Defekt.** `Clear-RecycleBin` meldet
+  in diesem Fall „Das System kann die angegebene Datei nicht finden" samt
+  PowerShell-Stacktrace. Der bisherige Notbehelf suchte im Fehlertext nach
+  „empty" oder „leer" und griff auf einem deutschen Windows nicht. Der
+  Rückgabewert von `SHEmptyRecycleBinW` lässt sich dagegen eindeutig
+  auswerten.
 
 ### Sicherheit
 

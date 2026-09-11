@@ -34,7 +34,7 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     // --- Navigation ------------------------------------------------------
     ("nav.dashboard", "Übersicht", "Dashboard"),
     ("nav.programs", "Programme", "Programs"),
-    ("nav.tweaks", "Einstellungen anpassen", "Adjust settings"),
+    ("nav.tweaks", "Windows Tweaks", "Windows Tweaks"),
     ("nav.about", "Über Plane", "About Plane"),
     ("nav.settings", "Einstellungen", "Settings"),
     ("nav.back", "Zurück zur Übersicht", "Back to dashboard"),
@@ -85,11 +85,13 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     ("status.failed", "Fehlgeschlagen", "Failed"),
     ("status.ok", "Erledigt", "Done"),
     ("status.cancelled", "Abgebrochen", "Cancelled"),
+    ("result.title", "Ergebnis", "Result"),
     ("skip.needs_admin", "Übersprungen: Plane läuft ohne Administratorrechte", "Skipped: Plane is running without administrator rights"),
     ("skip.needs_explicit_selection", "Übersprungen: Bitte einzelne Dateien auswählen", "Skipped: please select individual files"),
     ("warn.process_running", "{0} läuft – gesperrte Dateien bleiben erhalten", "{0} is running – locked files will remain"),
     ("error.service_stop", "Dienst konnte nicht gestoppt werden: {0}", "Could not stop service: {0}"),
     ("error.service_start", "Dienst konnte nicht neu gestartet werden: {0}", "Could not restart service: {0}"),
+    ("error.recyclebin", "Der Papierkorb ließ sich nicht leeren (Windows meldete {0}).", "The Recycle Bin could not be emptied (Windows reported {0})."),
     ("error.registry_backup", "Registry-Sicherung fehlgeschlagen – es wurde nichts geändert: {0}", "Registry backup failed – nothing was changed: {0}"),
     ("clean.failed", "Fehlgeschlagen: {0}", "Failed: {0}"),
     ("clean.summary", "{0} freigegeben, {1} Einträge entfernt", "{0} freed, {1} items removed"),
@@ -99,6 +101,8 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     ("clean.locked_hint", "Das ist normal – ein laufendes Programm hält seine Dateien offen. Administratorrechte ändern daran nichts; schließen Sie das Programm und starten Sie erneut.", "This is normal – a running program keeps its files open. Administrator rights do not help; close the program and run again."),
     ("clean.denied", "{0} Einträge brauchten höhere Rechte", "{0} items needed higher privileges"),
     ("clean.denied_hint", "Mit Administratorrechten neu starten, um diese Einträge zu entfernen.", "Restart with administrator rights to remove these items."),
+    ("clean.blocked", "{0} Einträge sperrt Windows selbst", "{0} items are blocked by Windows itself"),
+    ("clean.blocked_hint", "Windows lässt diese Ordner von keinem Programm durchlaufen – auch nicht als Administrator. Betroffen ist vor allem der Internet-Zwischenspeicher; Windows räumt ihn selbst auf.", "Windows lets no program traverse these folders – not even as administrator. This mainly affects the internet cache; Windows cleans it up by itself."),
     ("clean.log_written", "Protokoll: {0}", "Log: {0}"),
 
     // --- Administratorrechte ---------------------------------------------
@@ -274,7 +278,7 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     ("target.registry.orphans.description", "Verweise auf Programme, die es nicht mehr gibt. Microsoft rät von Registry-Bereinigung ab; Plane sichert deshalb vorher automatisch.", "References to programs that no longer exist. Microsoft advises against registry cleaning, so Plane always creates a backup first."),
 
     // --- Tweaks -----------------------------------------------------------
-    ("tweaks.title", "Einstellungen anpassen", "Adjust settings"),
+    ("tweaks.title", "Windows Tweaks", "Windows Tweaks"),
     ("tweaks.subtitle", "Eine kleine, geprüfte Auswahl an Windows-Einstellungen. Jede lässt sich zurücknehmen — Plane merkt sich dafür den Zustand, den es vorgefunden hat.", "A small, vetted set of Windows settings. Every one can be undone — Plane remembers the state it found, not an assumed default."),
     ("tweaks.omitted", "Bewusst nicht dabei: Windows Update abschalten, Defender deaktivieren, Edge oder OneDrive entfernen. Solche Eingriffe haben dokumentiert Systeme beschädigt.", "Deliberately absent: disabling Windows Update, turning off Defender, removing Edge or OneDrive. Such changes have documented cases of breaking systems."),
     ("tweaks.apply", "Anwenden", "Apply"),

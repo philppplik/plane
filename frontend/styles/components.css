@@ -107,6 +107,43 @@
     border-radius: 6px;
 }
 
+/* ---------------------------------------------------------------------------
+   Bildlaufleisten
+   ---------------------------------------------------------------------------
+   Die Windows-Standardleiste ist breit, grau und passt in keines der beiden
+   Erscheinungsbilder. Zwei Wege, weil WebView2 beide unterschiedlich gut
+   beherrscht: `scrollbar-*` ist der Standard, `::-webkit-scrollbar` erlaubt
+   den schmalen, schwebenden Griff. Wo beides greift, gewinnt Letzteres.
+
+   Ausdrücklich **keine** `overflow: overlay`-Tricks und keine
+   nachgebauten Leisten aus `div`s: eine Bildlaufleiste, die nicht mehr auf
+   Mausrad, Ziehen und Tastatur reagiert, ist schlechter als eine hässliche.
+   --------------------------------------------------------------------------- */
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--griff) transparent;
+}
+
+:root { --griff: rgba(90, 107, 46, 0.28); --griff-aktiv: rgba(90, 107, 46, 0.5); }
+[data-theme="dark"] { --griff: rgba(214, 238, 180, 0.22); --griff-aktiv: rgba(214, 238, 180, 0.42); }
+@media (prefers-color-scheme: dark) {
+    [data-theme="system"] { --griff: rgba(214, 238, 180, 0.22); --griff-aktiv: rgba(214, 238, 180, 0.42); }
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background-color: var(--griff);
+    border-radius: 99px;
+    /* Durchsichtiger Rand statt Abstand: der Griff wirkt schmal, die
+       Trefferfläche bleibt breit genug zum Ziehen. */
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: var(--griff-aktiv); }
+::-webkit-scrollbar-corner { background: transparent; }
+
 .serif { font-family: var(--font-serif); }
 
 .screen-centered { animation: fadeIn 0.5s ease-out; }
@@ -350,8 +387,18 @@ input[type="checkbox"] { accent-color: var(--accent-dark); width: 16px; height: 
    Ergebnis
    --------------------------------------------------------------------------- */
 
-.result-panel { animation: fadeIn 0.3s ease-out; }
-.result-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.result-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.result-head h2 { font-family: var(--font-serif); font-size: 1.3rem; color: var(--text-stark); }
+
+/* Erwartbare Zustände: Zahl plus was man dagegen tun kann. */
+.result-notes { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+.result-note {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 10px 14px; border-radius: 12px;
+    background: var(--flaeche); border-left: 3px solid var(--rand);
+}
+.result-note-title { font-size: 0.85rem; font-weight: 700; color: var(--text-stark); }
+.result-note-hint { font-size: 0.78rem; color: var(--text-schwach); }
 .result-total {
     font-family: var(--font-serif);
     font-size: clamp(1.2rem, 1rem + 1.2vw, 1.7rem);
@@ -376,6 +423,7 @@ input[type="checkbox"] { accent-color: var(--accent-dark); width: 16px; height: 
    --------------------------------------------------------------------------- */
 
 .modal { z-index: 300; }
+.modal-wide { max-width: 720px; }
 .modal-content {
     background: var(--flaeche); border: 1px solid var(--rand);
     max-height: 90vh; overflow-y: auto;
@@ -524,6 +572,25 @@ select {
     min-width: 0;
 }
 .entry.is-protected { opacity: 0.62; }
+
+/* Der Platz wird auch ohne Symbol gehalten – sonst stehen die Namen der
+   Zeilen nicht mehr auf einer Linie und die Liste franst aus. */
+.entry-icon {
+    width: 32px; height: 32px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    /* Ohne Bild: Anfangsbuchstabe auf ruhiger Fläche. Das unterscheidet die
+       Zeilen und wirkt nicht wie ein Ladefehler. */
+    background: var(--schiene);
+    color: var(--text-schwach);
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    line-height: 1;
+    user-select: none;
+}
+.entry-icon.has-icon { background: none; }
+.entry-icon-canvas { width: 32px; height: 32px; image-rendering: auto; }
+
 .entry-body { flex: 1; min-width: 0; }
 .entry-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .entry-name {

@@ -49,6 +49,14 @@ pub struct Programm {
     pub quiet: bool,
     /// Braucht die Deinstallation Administratorrechte?
     pub requires_admin: bool,
+    /// Rohwert von `DisplayIcon` – Quelle für das Programmsymbol.
+    ///
+    /// Wird nicht hier aufgelöst: das Lesen von 150 Symbolen aus ebenso
+    /// vielen Dateien dauert spürbar, und die Liste soll sofort stehen.
+    /// Die Oberfläche holt die Bilder in einem zweiten Schritt nach,
+    /// siehe [`super::icons`].
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub icon: String,
 }
 
 /// Woher der Eintrag stammt.
@@ -358,6 +366,68 @@ mod windows_impl {
         schluessel.get_value::<u32, _>(name).unwrap_or(0)
     }
 
+    /// Woher das Programmsymbol kommt.
+    ///
+    /// `DisplayIcon` ist der vorgesehene Weg, fehlt aber bei etwa jedem
+    /// dritten Eintrag. Dann taugt die Deinstallationsdatei als Ersatz —
+    /// allerdings nur, wenn es eine echte `.exe` ist: bei MSI-Paketen steht
+    /// dort `msiexec.exe`, und dessen Symbol vor jedem zweiten Programm wäre
+    /// schlechter als gar keins.
+    fn symbolquelle(schluessel: &RegKey, uninstall_string: &str) -> String {
+        let angabe = lies(schluessel, "DisplayIcon");
+        if !angabe.trim().is_empty() {
+            return angabe;
+        }
+
+        // Die Deinstallationszeile trägt fast immer Argumente
+        // (`"…\unins000.exe" /SILENT`). Ohne sauberes Zerlegen bliebe hier
+        // fast nichts übrig — vor dieser Korrektur hatten von 136 Einträgen
+        // nur 24 überhaupt eine Symbolquelle.
+        if let Some((programm, _)) = zerlege_befehl(uninstall_string) {
+            let klein = programm.to_ascii_lowercase();
+            if klein.ends_with(".exe") && !klein.contains("msiexec") {
+                return programm;
+            }
+        }
+
+        // MSI-Pakete verweisen auf `msiexec.exe`; dessen Symbol vor jedem
+        // zweiten Programm wäre schlechter als gar keins. Stattdessen die
+        // Hauptanwendung im Installationsordner suchen.
+        symbol_im_ordner(&lies(schluessel, "InstallLocation"))
+    }
+
+    /// Die wahrscheinlichste Programmdatei in einem Installationsordner.
+    ///
+    /// Ein Ordner enthält oft mehrere `.exe` — Hilfsprogramme, Updater,
+    /// Deinstaller. Genommen wird die **größte**, denn das ist in aller Regel
+    /// die Hauptanwendung, und nur die trägt ein aussagekräftiges Symbol.
+    /// Gesucht wird bewusst nur eine Ebene tief: ein rekursiver Durchlauf
+    /// über 100 Installationsordner würde die Liste spürbar verzögern.
+    fn symbol_im_ordner(ordner: &str) -> String {
+        let pfad = ordner.trim().trim_matches('"');
+        if pfad.is_empty() {
+            return String::new();
+        }
+
+        let Ok(eintraege) = std::fs::read_dir(pfad) else {
+            return String::new();
+        };
+
+        let mut beste: Option<(u64, String)> = None;
+        for eintrag in eintraege.flatten() {
+            let name = eintrag.file_name().to_string_lossy().to_ascii_lowercase();
+            if !name.ends_with(".exe") || name.starts_with("unins") {
+                continue;
+            }
+            let groesse = eintrag.metadata().map(|m| m.len()).unwrap_or(0);
+            if beste.as_ref().is_none_or(|(bisher, _)| groesse > *bisher) {
+                beste = Some((groesse, eintrag.path().to_string_lossy().to_string()));
+            }
+        }
+
+        beste.map(|(_, pfad)| pfad).unwrap_or_default()
+    }
+
     /// Einen Registry-Eintrag in ein [`Programm`] übersetzen – oder ihn
     /// verwerfen.
     ///
@@ -420,6 +490,7 @@ mod windows_impl {
             protection: schutz.to_string(),
             quiet: !quiet_string.is_empty() || ist_msi,
             requires_admin: quelle != Quelle::User,
+            icon: symbolquelle(schluessel, &uninstall_string),
         })
     }
 
@@ -467,6 +538,10 @@ mod windows_impl {
                     protection: schutz.to_string(),
                     quiet: true,
                     requires_admin: false,
+                    // Store-Pakete legen ihr Symbol im Paketmanifest ab, nicht
+                    // in der Registry. Das auszulesen verlangte die WinRT-API;
+                    // die Oberfläche zeigt hier ein Ersatzbild.
+                    icon: String::new(),
                 })
             })
             .collect()
@@ -819,6 +894,7 @@ mod tests {
     #[test]
     fn geschuetzte_eintraege_werden_nicht_deinstalliert() {
         let geschuetzt = Programm {
+            icon: String::new(),
             id: "X".into(),
             name: "Microsoft Visual C++ 2022".into(),
             version: String::new(),

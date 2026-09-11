@@ -256,7 +256,12 @@ async function starte() {
     await listen(FORTSCHRITT_EVENT, (ereignis) => progress.aktualisiere(ereignis.payload));
 
     // 5. Inhalte laden.
-    zustand.ziele = await api.holeZiele();
+    //    Der Rechtestatus wird hier einmal ermittelt: die Windows-Tweaks
+    //    brauchen ihn, um zwischen „geht nicht" und „geht nach einem
+    //    Neustart mit Rechten" zu unterscheiden.
+    const [ziele, system] = await Promise.all([api.holeZiele(), api.holeSystem()]);
+    zustand.ziele = ziele;
+    zustand.istAdmin = Boolean(system?.is_admin);
     zustand.laedt = false;
     dashboard.zeichne();
 

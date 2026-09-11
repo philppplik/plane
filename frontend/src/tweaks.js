@@ -11,11 +11,21 @@
  *    hat. Beides steht als eigener Knopf da.
  * 3. **Nebenwirkung immer sichtbar.** Jeder Punkt nennt, was er kostet –
  *    nicht nur, was er bringt.
+ *
+ * # Warum nur eine Zeile neu gezeichnet wird
+ *
+ * Ein `replaceChildren` auf der ganzen Liste leert den Container für einen
+ * Augenblick. Die Seite wird dabei kurz kürzer als die Bildlaufposition, der
+ * Browser klemmt sie auf null – und die Ansicht springt nach oben. Wer einen
+ * Punkt weiter unten umschaltet, verliert also seine Stelle. Deshalb hält
+ * [`zeilen`] eine Zuordnung Schlüssel → Element, und nach einer Änderung
+ * wird genau ein Knoten ersetzt.
  */
 
 import * as api from './api.js';
 import { $, el, zeige, setzeText } from './dom.js';
 import { t } from './i18n.js';
+import { zustand } from './state.js';
 import { frageNach } from './confirm.js';
 
 /** Reihenfolge der Gruppen – entspricht `TweakGroup::ALL` im Backend. */
@@ -25,6 +35,9 @@ let punkte = [];
 let geladen = false;
 let laeuft = false;
 let melde = () => {};
+
+/** Schlüssel → Zeilenelement, damit einzeln nachgezeichnet werden kann. */
+const zeilen = new Map();
 
 export function verdrahte({ meldung } = {}) {
     if (meldung) melde = meldung;
@@ -54,9 +67,12 @@ export function beschrifte() {
     if (geladen) zeichneListe();
 }
 
+/** Vollständiger Neuaufbau – nur beim Laden und beim Sprachwechsel. */
 function zeichneListe() {
     const liste = $('tweaks-list');
     if (!liste) return;
+
+    zeilen.clear();
 
     const gruppen = GRUPPEN.map((gruppe) => {
         const eintraege = punkte.filter((p) => p.group === gruppe);
@@ -64,6 +80,15 @@ function zeichneListe() {
     }).filter(Boolean);
 
     liste.replaceChildren(...gruppen);
+}
+
+/** Eine einzelne Zeile an Ort und Stelle austauschen. */
+function zeichneZeile(punkt) {
+    const alt = zeilen.get(punkt.key);
+    const neu = baueZeile(punkt);
+    if (alt?.isConnected) {
+        alt.replaceWith(neu);
+    }
 }
 
 function baueGruppe(gruppe, eintraege) {
@@ -74,11 +99,20 @@ function baueGruppe(gruppe, eintraege) {
 }
 
 /** Zustandsabzeichen – dieselbe Sprache wie in der Kommandozeile. */
-function zustandsText(zustand) {
-    return t(`tweaks.state.${zustand}`);
+function zustandsText(zustand_) {
+    return t(`tweaks.state.${zustand_}`);
 }
 
+/**
+ * Braucht dieser Punkt Rechte, die Plane gerade nicht hat?
+ *
+ * Der Punkt bleibt trotzdem bedienbar: ein Klick fragt nach einem Neustart
+ * mit Administratorrechten, statt einfach nichts zu tun.
+ */
+const fehlenRechte = (punkt) => punkt.requires_admin && !zustand.istAdmin;
+
 function baueZeile(punkt) {
+    // Gesperrt ist nur, was auch mit Rechten nichts brächte.
     const gesperrt = punkt.unsupported || punkt.managed || laeuft;
 
     const schalter = el('input', {
@@ -98,7 +132,7 @@ function baueZeile(punkt) {
             text: zustandsText(punkt.state),
         }),
         el('span', { klasse: 'badge', text: t(`tweaks.effect.${punkt.apply}`) }),
-        punkt.requires_admin
+        fehlenRechte(punkt)
             ? el('span', { klasse: 'badge badge-admin', text: t('risk.needs_admin') })
             : null,
         punkt.unsupported
@@ -135,7 +169,7 @@ function baueZeile(punkt) {
     });
     zurueck.addEventListener('click', () => nimmZurueck(punkt));
 
-    return el('div', { klasse: 'tweak-row' + (gesperrt ? ' is-locked' : '') }, [
+    const zeile = el('div', { klasse: 'tweak-row' + (gesperrt ? ' is-locked' : '') }, [
         el('label', { klasse: 'tweak-main' }, [
             el('span', { klasse: 'switch' }, [
                 schalter,
@@ -145,6 +179,52 @@ function baueZeile(punkt) {
         ]),
         zurueck,
     ]);
+
+    zeilen.set(punkt.key, zeile);
+    return zeile;
+}
+
+// ---------------------------------------------------------------------------
+// Administratorrechte
+// ---------------------------------------------------------------------------
+
+/**
+ * Rechte besorgen, falls der Punkt sie braucht.
+ *
+ * Windows kennt keinen Weg, einen einzelnen Registry-Schreibzugriff
+ * nachträglich zu erhöhen. Wer `HKEY_LOCAL_MACHINE` schreiben will, muss den
+ * **Prozess** erhöht starten — deshalb bietet Plane hier einen Neustart an
+ * und löst damit die UAC-Rückfrage von Windows aus.
+ *
+ * @returns {Promise<boolean>} `true`, wenn weitergemacht werden kann.
+ */
+async function rechteBesorgen(punkt) {
+    if (!fehlenRechte(punkt)) return true;
+
+    const freigabe = await frageNach({
+        titel: t('admin.restart'),
+        einleitung: t('tweak.needs_admin'),
+        punkte: [
+            {
+                name: t(`tweak.${punkt.key}.name`),
+                grund: t('risk.needs_admin'),
+            },
+        ],
+        warnung: t('admin.restart_hint'),
+        zustimmen: t('admin.restart'),
+    });
+    if (!freigabe) return false;
+
+    // Ab hier übernimmt Windows: die UAC-Rückfrage erscheint, und bei
+    // Zustimmung beendet sich dieser Prozess zugunsten des erhöhten.
+    const ergebnis = await api.starteAlsAdminNeu();
+    if (ergebnis === 'already') {
+        // Sollte nicht vorkommen – dann stimmte nur die Anzeige nicht.
+        zustand.istAdmin = true;
+        return true;
+    }
+    if (!ergebnis) melde(t('admin.failed'), true);
+    return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -154,34 +234,28 @@ function baueZeile(punkt) {
 async function schalte(punkt, an) {
     if (laeuft) return;
 
-    if (punkt.requires_admin) {
-        const freigabe = await frageNach({
-            titel: t(`tweak.${punkt.key}.name`),
-            einleitung: t(`tweak.${punkt.key}.effect`),
-            warnung: t('risk.needs_admin'),
-            zustimmen: an ? t('tweaks.apply') : t('tweaks.revert'),
-        });
-        if (!freigabe) {
-            zeichneListe();
-            return;
-        }
+    if (!(await rechteBesorgen(punkt))) {
+        // Der Schalter steht jetzt falsch – zurück auf den echten Zustand.
+        zeichneZeile(punkt);
+        return;
     }
 
     laeuft = true;
-    const zustand = await api.setzeTweak(punkt.key, an);
+    const neuerZustand = await api.setzeTweak(punkt.key, an);
     laeuft = false;
 
-    abschliessen(punkt, zustand);
+    abschliessen(punkt, neuerZustand);
 }
 
 async function nimmZurueck(punkt) {
     if (laeuft) return;
+    if (!(await rechteBesorgen(punkt))) return;
 
     laeuft = true;
-    const zustand = await api.nimmTweakZurueck(punkt.key);
+    const neuerZustand = await api.nimmTweakZurueck(punkt.key);
     laeuft = false;
 
-    abschliessen(punkt, zustand);
+    abschliessen(punkt, neuerZustand);
 }
 
 /**
@@ -191,23 +265,28 @@ async function nimmZurueck(punkt) {
  * aus dem, was Plane zu schreiben versucht hat. Steht dort etwas anderes als
  * erwartet, sieht man das hier sofort.
  */
-function abschliessen(punkt, zustand) {
-    if (zustand === null || zustand === undefined) {
+function abschliessen(punkt, neuerZustand) {
+    if (neuerZustand === null || neuerZustand === undefined) {
         // Die Fehlermeldung steht bereits auf dem Bildschirm; die Anzeige
         // stellt den zuletzt bekannten Zustand wieder her.
-        zeichneListe();
+        zeichneZeile(punkt);
         return;
     }
 
-    punkt.state = zustand;
-    zeichneListe();
+    punkt.state = neuerZustand;
+    zeichneZeile(punkt);
 
-    const nachwirkung = punkt.apply === 'immediate' ? '' : ` ${t(`tweaks.effect.${punkt.apply}`)}`;
-    melde(`${t(`tweak.${punkt.key}.name`)}: ${zustandsText(zustand)}.${nachwirkung}`, false);
+    const nachwirkung =
+        punkt.apply === 'immediate' ? '' : ` ${t(`tweaks.effect.${punkt.apply}`)}`;
+    melde(
+        `${t(`tweak.${punkt.key}.name`)}: ${zustandsText(neuerZustand)}.${nachwirkung}`,
+        false
+    );
 }
 
 /** Nur für Tests und den Sprachwechsel: Zustand zurücksetzen. */
 export function vergiss() {
     punkte = [];
+    zeilen.clear();
     geladen = false;
 }

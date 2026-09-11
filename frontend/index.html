@@ -147,16 +147,6 @@
                         <div id="target-list" class="target-list"></div>
                     </section>
 
-                    <section id="result-panel" class="panel result-panel" aria-live="polite"
-                             hidden>
-                        <div class="result-head">
-                            <span id="result-badge" class="badge"></span>
-                            <button id="result-close" class="btn-text" type="button"></button>
-                        </div>
-                        <p id="result-total" class="result-total"></p>
-                        <p id="result-backup" class="result-backup" hidden></p>
-                        <ul id="result-list" class="result-list"></ul>
-                    </section>
                 </section>
 
                 <!-- ---------- Programme ---------- -->
@@ -349,6 +339,31 @@
             <div class="modal-actions">
                 <button id="settings-reset-welcome" class="btn-secondary" type="button"></button>
                 <button id="settings-close" class="btn-primary" type="button"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         Ergebnis einer Bereinigung
+
+         Bewusst ein Dialog und kein Abschnitt am Seitenende: das Ergebnis
+         ist der Moment, auf den der ganze Lauf hinausläuft. Wer dafür
+         scrollen muss, sieht es nicht.
+         ================================================================ -->
+    <div id="result-modal" class="modal is-hidden" role="dialog" aria-modal="true"
+         aria-labelledby="result-title">
+        <div class="modal-content modal-wide">
+            <button id="result-close-x" class="modal-close" type="button">×</button>
+            <div class="result-head">
+                <h2 id="result-title"></h2>
+                <span id="result-badge" class="badge"></span>
+            </div>
+            <p id="result-total" class="result-total"></p>
+            <p id="result-backup" class="result-backup" hidden></p>
+            <ul id="result-notes" class="result-notes"></ul>
+            <ul id="result-list" class="result-list"></ul>
+            <div class="modal-actions">
+                <button id="result-close" class="btn-primary" type="button"></button>
             </div>
         </div>
     </div>
