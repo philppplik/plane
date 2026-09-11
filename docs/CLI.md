@@ -27,7 +27,7 @@ Keine Administratorrechte nötig — geschrieben wird nur ins eigene Profil.
 Eine bestimmte Version:
 
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/philppplik/plane/main/scripts/install-cli.ps1))) -Version v0.1.0
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/philppplik/plane/main/scripts/install-cli.ps1))) -Version v0.2.0
 ```
 
 ### Aus dem Quelltext
