@@ -103,11 +103,14 @@ Python 3.11+ nur für die Tests.
 
 ## Kommandozeile
 
-Installieren (keine Administratorrechte nötig):
+Installieren — ein Befehl in PowerShell, keine Administratorrechte nötig:
 
-```bat
-scripts\install-cli.bat
+```powershell
+irm https://raw.githubusercontent.com/philppplik/plane/main/scripts/install-cli.ps1 | iex
 ```
+
+Erkennt die Architektur, prüft die SHA256-Summe und ergänzt den PATH. Aus einem
+ausgecheckten Repository geht auch `scripts\install-cli.bat`.
 
 Danach in einem **neuen** Terminal:
 

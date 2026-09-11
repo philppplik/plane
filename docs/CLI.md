@@ -5,24 +5,68 @@ Engine. Stand: 2026-09-11.
 
 ## Installation
 
+### Empfohlen: ein Befehl im Terminal
+
+PowerShell öffnen und einfügen:
+
+```powershell
+irm https://raw.githubusercontent.com/philppplik/plane/main/scripts/install-cli.ps1 | iex
+```
+
+Das Skript erkennt die Architektur (x64 oder ARM64), lädt `plane-cli.exe` aus
+der neuesten Veröffentlichung, **prüft die SHA256-Summe** gegen die
+veröffentlichte `SHA256SUMS.txt`, legt die Datei in
+`%LOCALAPPDATA%\Programs\Plane` ab und ergänzt den Benutzer-PATH.
+
+Keine Administratorrechte nötig — geschrieben wird nur ins eigene Profil.
+
+> Die Prüfsummenkontrolle ist kein Beiwerk. Plane löscht Dateien; ein
+> manipuliertes Binary wäre ein Totalschaden. Stimmt die Summe nicht, bricht
+> das Skript ab und installiert nichts.
+
+Eine bestimmte Version:
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/philppplik/plane/main/scripts/install-cli.ps1))) -Version v0.1.0
+```
+
+### Aus dem Quelltext
+
+Wenn du das Repository ohnehin ausgecheckt hast:
+
 ```bat
 scripts\install-cli.bat
 ```
 
-Kopiert `plane-cli.exe` nach `%LOCALAPPDATA%\Programs\Plane` und nimmt den
-Ordner in den Benutzer-PATH auf. **Keine Administratorrechte nötig** — es wird
-nur ins eigene Profil geschrieben. Fehlt das Binary, baut das Skript es vorher
-(braucht dann [Rust](https://rustup.rs/)).
+Baut das Binary bei Bedarf selbst (braucht dann [Rust](https://rustup.rs/)) und
+installiert es an dieselbe Stelle.
 
-Danach ein **neues** Terminal öffnen; PATH-Änderungen gelten nicht rückwirkend.
+### Von Hand
 
-Entfernen:
+`plane-cli.exe` aus der [Veröffentlichung](https://github.com/philppplik/plane/releases)
+laden und irgendwohin legen, das im PATH liegt. Mehr braucht es nicht — die CLI
+ist eine einzelne Datei ohne Abhängigkeiten.
+
+### Prüfen
+
+**Neues Terminal öffnen** (PATH-Änderungen gelten nicht rückwirkend), dann:
+
+```bash
+plane-cli --version
+```
+
+### Entfernen
 
 ```bat
 scripts\uninstall-cli.bat
 ```
 
-Ohne Installation lässt sich die CLI auch direkt aufrufen:
+Oder von Hand: `%LOCALAPPDATA%\Programs\Plane` löschen und den Eintrag aus dem
+Benutzer-PATH nehmen.
+
+### Ohne Installation
+
+Direkt aus dem Buildverzeichnis:
 
 ```bat
 src-tauri\target\release\plane-cli.exe scan

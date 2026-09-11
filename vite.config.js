@@ -13,9 +13,12 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
-    // Tauri liefert eine feste Webview-Version aus; Transpilierung fuer alte
-    // Browser waere reiner Ballast.
+    // Tauri liefert eine feste Webview-Version aus; Transpilierung für alte
+    // Browser wäre reiner Ballast.
     target: 'esnext',
-    minify: 'esbuild',
+    // Bewusst `true` statt eines festen Minifizierers: Vite hat den
+    // Unterbau von esbuild auf rolldown umgestellt. `minify: 'esbuild'`
+    // würde dort ein Paket verlangen, das nicht mehr mitgeliefert wird.
+    minify: true,
   },
 })
