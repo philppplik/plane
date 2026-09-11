@@ -1,0 +1,4 @@
+# Standardstil von rustfmt mit einer etwas breiteren Zeile: die deutschen
+# Bezeichner im Projekt sind laenger als englische.
+max_width = 100
+edition = "2021"

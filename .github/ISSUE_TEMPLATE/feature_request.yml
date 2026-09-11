@@ -1,0 +1,50 @@
+name: "💡 Funktionswunsch"
+description: "Eine Idee für Plane / Suggest an idea for Plane"
+title: "[Wunsch] "
+labels: ["funktionswunsch"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Für ein **neues Reinigungsziel** gibt es eine eigene Vorlage – bitte
+        diese nutzen.
+
+        _For a new cleaning target, please use the dedicated template._
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welches Problem soll gelöst werden?
+      description: |
+        Beschreibe die Situation, nicht die Lösung. „Ich weiß nie, wie viel
+        Platz eine Bereinigung wirklich bringt" ist hilfreicher als „baut
+        einen Balken ein".
+    validations:
+      required: true
+
+  - type: textarea
+    id: vorschlag
+    attributes:
+      label: Vorgeschlagene Lösung
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternativen
+    attributes:
+      label: Alternativen
+      description: "Was hast du sonst noch erwogen oder bisher getan?"
+
+  - type: dropdown
+    id: bereich
+    attributes:
+      label: Betroffener Bereich
+      multiple: true
+      options:
+        - "Grafische Oberfläche"
+        - "Kommandozeile / TUI"
+        - "Reinigungs-Engine"
+        - "Übersetzungen"
+        - "Dokumentation"
+    validations:
+      required: true

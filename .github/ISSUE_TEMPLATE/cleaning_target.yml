@@ -1,0 +1,103 @@
+name: "🧹 Neues Reinigungsziel vorschlagen"
+description: "Ein Programm oder Systembereich, den Plane noch nicht kennt / Suggest a new cleaning target"
+title: "[Ziel] "
+labels: ["reinigungsziel"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke für den Vorschlag! Damit ein Ziel aufgenommen werden kann,
+        brauchen wir vor allem eins: **Belege**. Plane löscht Dateien – ein
+        falscher Pfad kostet jemanden seine Daten.
+
+        _Thanks! To accept a target we mainly need evidence — Plane deletes
+        files, and a wrong path costs someone their data._
+
+  - type: input
+    id: programm
+    attributes:
+      label: Programm oder Systembereich
+      description: "Welche Software legt die Dateien an? / Which software creates these files?"
+      placeholder: "z. B. Slack, Obsidian, Windows-Suchindex"
+    validations:
+      required: true
+
+  - type: textarea
+    id: pfade
+    attributes:
+      label: Exakte Pfade
+      description: |
+        Ein Pfad pro Zeile, in `%VAR%`-Schreibweise. **Keine** festen
+        Laufwerksbuchstaben – Plane läuft auch auf Systemen, die nicht auf C:
+        installiert sind. Platzhalter `*` je Segment, `**` für rekursiv.
+      placeholder: |
+        %APPDATA%/Slack/Cache/*
+        %APPDATA%/Slack/Code Cache/**/*
+      render: text
+    validations:
+      required: true
+
+  - type: dropdown
+    id: rechte
+    attributes:
+      label: Administratorrechte nötig?
+      options:
+        - "Nein – liegt im Benutzerprofil"
+        - "Ja – liegt in einem Systemverzeichnis"
+        - "Weiß ich nicht"
+    validations:
+      required: true
+
+  - type: input
+    id: prozesse
+    attributes:
+      label: Sperrende Prozesse
+      description: "Welche Programme müssen geschlossen sein? / Which processes lock these files?"
+      placeholder: "slack.exe"
+
+  - type: dropdown
+    id: risiko
+    attributes:
+      label: Risikoeinstufung
+      description: |
+        `Unbedenklich` nur, wenn der Inhalt **garantiert** automatisch neu
+        erzeugt wird. Alles, was Anmeldungen, Verläufe oder Nutzerdaten
+        betrifft, ist mindestens „Mit Nebenwirkung".
+      options:
+        - "Unbedenklich – reiner Cache, wird neu erzeugt"
+        - "Mit Nebenwirkung – Abmeldung, Verlauf weg, langsamerer Start"
+        - "Vorsicht – Datenverlust möglich"
+    validations:
+      required: true
+
+  - type: textarea
+    id: nebenwirkung
+    attributes:
+      label: Was passiert nach dem Löschen?
+      description: |
+        Konkret: Was merkt der Nutzer? Was geht verloren und ist nicht
+        wiederherstellbar?
+      placeholder: "Slack lädt Bilder beim nächsten Start neu. Die Anmeldung bleibt bestehen."
+    validations:
+      required: true
+
+  - type: textarea
+    id: beleg
+    attributes:
+      label: Beleg
+      description: |
+        Woher stammen die Pfade? Herstellerdokumentation, BleachBit-Definition,
+        Winapp2-Eintrag, oder selbst geprüft (dann bitte Windows-Version
+        nennen).
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: bestaetigung
+    attributes:
+      label: Bestätigung
+      options:
+        - label: "Ich habe geprüft, dass in diesem Bericht keine persönlichen Pfade oder Daten stehen."
+          required: true
+        - label: "Die Pfade enthalten keinen festen Laufwerksbuchstaben."
+          required: true

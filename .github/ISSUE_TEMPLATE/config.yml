@@ -1,0 +1,20 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Sicherheitslücke melden (Security vulnerability)
+    url: https://github.com/PhilippPaulik/plane/security/advisories/new
+    about: >-
+      Bitte NIEMALS als öffentliches Issue. Nutzen Sie die privaten GitHub
+      Security Advisories. — Never file a public issue; use private advisories.
+
+  - name: Frage oder Diskussion (Question or discussion)
+    url: https://github.com/PhilippPaulik/plane/discussions
+    about: >-
+      Fragen zur Benutzung, Ideen und offene Diskussionen gehören in die
+      Discussions. — General questions and ideas belong in Discussions.
+
+  - name: Dokumentation lesen (Read the documentation)
+    url: https://github.com/PhilippPaulik/plane/tree/main/docs
+    about: >-
+      Datenstrukturen, Testsuite und Mängelregister sind dokumentiert. —
+      Data structures, test suite and known issues are documented.

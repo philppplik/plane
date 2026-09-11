@@ -1,0 +1,25 @@
+{
+  "name": "plane",
+  "version": "0.1.0",
+  "description": "Plane - Lightweight Windows PC Cleaner",
+  "keywords": ["pc cleaner", "disk cleaner", "windows", "tauri"],
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "test": "npm run test:rust && npm run test:python",
+    "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
+    "test:python": "python -m pytest"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.0.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "vite": "^5.0.0"
+  }
+}

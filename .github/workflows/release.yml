@@ -1,0 +1,109 @@
+name: Release
+
+# Wird durch einen Versions-Tag ausgeloest, z. B.:
+#   git tag -a v0.1.0 -m "Plane 0.1.0" && git push origin v0.1.0
+#
+# Gebaut wird fuer beide Windows-Architekturen: x64 (Intel/AMD) und ARM64
+# (z. B. Snapdragon X). Die MSI-Installer werden an einen **Entwurfs-Release**
+# gehaengt, damit vor der Veroeffentlichung geprueft werden kann, ob beide
+# Artefakte vorhanden und startfaehig sind.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Bestehender Tag, fuer den gebaut werden soll (z. B. v0.1.0)'
+        required: true
+        type: string
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: MSI bauen (${{ matrix.arch }})
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    # Der Release wird angelegt bzw. ergaenzt - dafuer sind Schreibrechte noetig.
+    permissions:
+      contents: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            target: x86_64-pc-windows-msvc
+          - arch: arm64
+            target: aarch64-pc-windows-msvc
+
+    steps:
+      - name: Quellcode auschecken
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Rust-Toolchain einrichten
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Zielarchitektur sicherstellen
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Cargo-Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          key: ${{ matrix.target }}
+
+      - name: Abhaengigkeiten installieren
+        run: npm ci
+
+      # tauri-action baut das Frontend ueber `beforeBuildCommand` mit, legt den
+      # Entwurfs-Release an (bzw. findet den bestehenden) und laedt die MSI hoch.
+      - name: Bauen und an den Release haengen
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ inputs.tag || github.ref_name }}
+          releaseName: 'Plane ${{ inputs.tag || github.ref_name }}'
+          releaseBody: |
+            Windows-Installer fuer beide Architekturen.
+
+            | Datei | Passt fuer |
+            |-------|------------|
+            | `*_x64_*.msi` | Intel- und AMD-Prozessoren |
+            | `*_arm64_*.msi` | Windows on ARM (z. B. Snapdragon X) |
+
+            Aenderungen: siehe [CHANGELOG.md](../blob/main/CHANGELOG.md).
+
+            Diese Binaerdateien sind noch **nicht signiert**. Windows
+            SmartScreen wird beim ersten Start warnen. Pruefen Sie die
+            Pruefsumme, bevor Sie installieren.
+          releaseDraft: true
+          prerelease: false
+          args: --target ${{ matrix.target }}
+
+      - name: Installer zusaetzlich als Workflow-Artefakt sichern
+        uses: actions/upload-artifact@v4
+        with:
+          name: plane-${{ matrix.arch }}-msi
+          path: src-tauri/target/${{ matrix.target }}/release/bundle/msi/*.msi
+          if-no-files-found: error
+          retention-days: 14

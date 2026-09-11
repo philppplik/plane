@@ -1,0 +1,30 @@
+# --- Node / Vite ---------------------------------------------------------
+node_modules/
+dist/
+.vite/
+*.log
+npm-debug.log*
+
+# --- Rust / Tauri --------------------------------------------------------
+src-tauri/target/
+src-tauri/gen/schemas/
+
+# --- Python --------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# --- Betriebssystem / Editor --------------------------------------------
+Thumbs.db
+desktop.ini
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# --- Persoenliches ------------------------------------------------------
+# Enthaelt fest verdrahtete Pfade des Entwicklungsrechners und hat im
+# oeffentlichen Repository nichts verloren. `npm run tauri:build` ersetzt es.
+build-tauri.sh

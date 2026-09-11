@@ -1,0 +1,74 @@
+version: 2
+
+# Woechentliche Abhaengigkeitspruefung fuer alle vier Oekosysteme des Projekts.
+# Fuer einen Cleaner ist Lieferketten-Integritaet besonders wichtig (siehe
+# SECURITY.md) - Updates werden deshalb aktiv verfolgt und nicht ausgesessen.
+
+updates:
+  # --- Rust / Tauri-Backend ------------------------------------------------
+  - package-ecosystem: cargo
+    directory: /src-tauri
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'build(cargo)'
+    labels:
+      - dependencies
+      - rust
+    groups:
+      rust-patch:
+        update-types:
+          - patch
+
+  # --- Frontend / Tauri-CLI ------------------------------------------------
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'build(npm)'
+    labels:
+      - dependencies
+      - javascript
+    groups:
+      npm-patch:
+        update-types:
+          - patch
+
+  # --- Python: CLI-Kern und Testsuite --------------------------------------
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'build(pip)'
+    labels:
+      - dependencies
+      - python
+
+  # --- Die Workflows selbst ------------------------------------------------
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'ci'
+    labels:
+      - dependencies
+      - github-actions

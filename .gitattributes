@@ -1,0 +1,24 @@
+# Zeilenenden im Repository immer LF; Auschecken regelt Git.
+* text=auto eol=lf
+
+# Windows-Skripte brauchen CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binaerdateien nicht anfassen.
+*.png binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.msi binary
+*.exe binary
+*.dll binary
+
+# Fuer Diffs und Sprachstatistik.
+*.rs text diff=rust
+*.py text diff=python
+Cargo.lock text -diff linguist-generated
+package-lock.json text -diff linguist-generated

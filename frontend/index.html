@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F1FFE2">
+    <title>Plane</title>
+    <link rel="stylesheet" href="./styles/global.css">
+    <link rel="stylesheet" href="./styles/components.css">
+</head>
+<body>
+<div id="app">
+
+    <!-- ================================================================
+         Willkommen – nur beim ersten Start sichtbar.
+         ================================================================ -->
+    <section id="welcome-screen" class="screen screen-centered is-hidden"
+             aria-labelledby="welcome-title">
+        <div class="background-image" aria-hidden="true"></div>
+        <div class="welcome-card">
+            <img src="./assets/app-icn.png" alt="" class="logo-large">
+            <h1 id="welcome-title" class="serif"></h1>
+            <p id="welcome-tagline" class="subtitle"></p>
+            <button id="welcome-start" class="btn-primary btn-large" type="button"></button>
+        </div>
+    </section>
+
+    <!-- ================================================================
+         Anwendungsrahmen: Seitenleiste plus Inhaltsbereich. Übersicht und
+         Über-Ansicht sind Ansichten *innerhalb* dieses Rahmens, damit die
+         Navigation beim Wechsel stehen bleibt.
+         ================================================================ -->
+    <section id="shell-screen" class="screen is-hidden">
+        <div class="shell">
+
+            <aside id="app-sidebar" class="sidebar">
+                <div class="logo-group">
+                    <img src="./assets/app-icn.png" alt="" class="logo-icon">
+                    <span class="logo-text">Plane</span>
+                </div>
+
+                <nav class="nav" id="app-nav">
+                    <button id="nav-home" class="nav-item is-active" type="button"
+                            data-screen="home" aria-current="page">
+                        <span class="nav-icon" aria-hidden="true">▤</span>
+                        <span class="nav-label" data-i18n="nav.dashboard"></span>
+                    </button>
+                    <button id="nav-about" class="nav-item" type="button" data-screen="about">
+                        <span class="nav-icon" aria-hidden="true">◍</span>
+                        <span class="nav-label" data-i18n="nav.about"></span>
+                    </button>
+                    <button id="nav-settings" class="nav-item" type="button">
+                        <span class="nav-icon" aria-hidden="true">⚙</span>
+                        <span class="nav-label" data-i18n="nav.settings"></span>
+                    </button>
+                </nav>
+
+                <div class="side-cards">
+                    <div class="side-card" id="disk-card">
+                        <h2 id="disk-title" class="side-card-title"></h2>
+                        <div class="progress-bar" role="progressbar" id="disk-bar"
+                             aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <div id="disk-fill" class="progress-fill"></div>
+                        </div>
+                        <div class="disk-stats">
+                            <span id="disk-free"></span>
+                            <span id="disk-total"></span>
+                        </div>
+                        <div class="disk-percent" id="disk-percent"></div>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="main-content">
+
+                <!-- ---------- Übersicht ---------- -->
+                <section id="home-screen" class="view" aria-labelledby="home-title">
+
+                    <header class="hero">
+                        <h1 id="home-title"></h1>
+                        <p id="home-subtitle"></p>
+
+                        <div class="hero-result" id="hero-result">
+                            <p id="scan-headline" class="scan-headline" aria-live="polite"></p>
+                            <p id="scan-note" class="scan-note"></p>
+                        </div>
+
+                        <div class="hero-actions">
+                            <button id="scan-button" class="btn-primary" type="button"></button>
+                            <button id="clean-button" class="btn-primary btn-clean" type="button"
+                                    hidden></button>
+                        </div>
+                    </header>
+
+                    <section class="panel" aria-labelledby="targets-heading">
+                        <h2 id="targets-heading" class="visually-hidden"
+                            data-i18n="nav.dashboard"></h2>
+
+                        <div class="toolbar" id="target-toolbar" role="group">
+                            <button id="select-all" class="btn-secondary" type="button"></button>
+                            <button id="select-none" class="btn-secondary" type="button"></button>
+                            <button id="select-recommended" class="btn-secondary"
+                                    type="button"></button>
+                            <label class="switch" for="dry-run-toggle">
+                                <input type="checkbox" id="dry-run-toggle">
+                                <span class="switch-track" aria-hidden="true"></span>
+                                <span class="switch-text" id="dry-run-label"></span>
+                            </label>
+                        </div>
+
+                        <div id="target-skeleton" class="skeleton-list" aria-hidden="true">
+                            <div class="skeleton-row"></div>
+                            <div class="skeleton-row"></div>
+                            <div class="skeleton-row"></div>
+                            <div class="skeleton-row"></div>
+                        </div>
+
+                        <div id="target-list" class="target-list"></div>
+                    </section>
+
+                    <section id="result-panel" class="panel result-panel" aria-live="polite"
+                             hidden>
+                        <div class="result-head">
+                            <span id="result-badge" class="badge"></span>
+                            <button id="result-close" class="btn-text" type="button"></button>
+                        </div>
+                        <p id="result-total" class="result-total"></p>
+                        <p id="result-backup" class="result-backup" hidden></p>
+                        <ul id="result-list" class="result-list"></ul>
+                    </section>
+                </section>
+
+                <!-- ---------- Über Plane ---------- -->
+                <section id="about-screen" class="view is-hidden" aria-labelledby="about-title">
+                    <div class="about-head">
+                        <img src="./assets/app-icn.png" alt="" class="about-logo">
+                        <div class="about-headings">
+                            <h1 id="about-title">Plane</h1>
+                            <p id="about-subtitle" class="subheading"></p>
+                            <p id="about-made-in" class="tagline"></p>
+                            <span id="about-version" class="badge"></span>
+                        </div>
+                    </div>
+
+                    <div class="about-grid">
+                        <div class="about-block">
+                            <h2 id="about-tech-title"></h2>
+                            <ul class="about-list">
+                                <li>Rust · Tauri 2</li>
+                                <li>Windows 10 / 11 · x86-64</li>
+                                <li>JSON · %APPDATA%\com.ppaul.plane</li>
+                                <li>DSGVO · 100 % offline</li>
+                            </ul>
+                        </div>
+
+                        <div class="about-block">
+                            <h2 id="about-opensource-title"></h2>
+                            <ul class="about-list">
+                                <li>Tauri 2 · MIT</li>
+                                <li>serde · MIT / Apache-2.0</li>
+                                <li>sysinfo · MIT</li>
+                                <li>Vite 5 · MIT</li>
+                                <li>Young Serif · OFL</li>
+                                <li>Elms Sans · OFL</li>
+                            </ul>
+                        </div>
+
+                        <div class="about-block">
+                            <h2 id="about-system-title"></h2>
+                            <ul class="about-list" id="about-system-list"></ul>
+                            <p id="about-admin" class="about-admin"></p>
+                        </div>
+                    </div>
+
+                    <div class="about-footer">
+                        <p id="about-copyright"></p>
+                        <button id="about-back" class="btn-secondary" type="button"></button>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </section>
+
+    <!-- ================================================================
+         Fortschritt – deckt die Oberfläche ab, solange gearbeitet wird.
+         ================================================================ -->
+    <div id="progress-overlay" class="overlay is-hidden" role="dialog" aria-modal="true"
+         aria-labelledby="progress-title">
+        <div class="overlay-card">
+            <h2 id="progress-title" class="progress-title"></h2>
+            <p id="progress-target" class="progress-target"></p>
+
+            <div class="progress-bar progress-bar-large" role="progressbar" id="progress-bar"
+                 aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+
+            <div class="progress-meta">
+                <span id="progress-percent" class="progress-percent"></span>
+                <span id="progress-counter" class="progress-counter"></span>
+                <span id="progress-bytes" class="progress-bytes"></span>
+            </div>
+
+            <p id="progress-path" class="progress-path" title=""></p>
+
+            <button id="progress-cancel" class="btn-secondary" type="button"></button>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         Einstellungen
+         ================================================================ -->
+    <div id="settings-modal" class="modal is-hidden" role="dialog" aria-modal="true"
+         aria-labelledby="settings-title">
+        <div class="modal-content">
+            <button id="settings-close-x" class="modal-close" type="button">×</button>
+            <h2 id="settings-title"></h2>
+
+            <div class="setting-row">
+                <label id="settings-language-label" for="settings-language"></label>
+                <select id="settings-language"></select>
+                <p id="settings-language-hint" class="setting-hint"></p>
+            </div>
+
+            <fieldset class="setting-row">
+                <legend id="settings-theme-label"></legend>
+                <div class="segmented" id="settings-theme" role="radiogroup">
+                    <button id="theme-system" class="segment" type="button" role="radio"
+                            aria-checked="true" data-theme="system"></button>
+                    <button id="theme-light" class="segment" type="button" role="radio"
+                            aria-checked="false" data-theme="light"></button>
+                    <button id="theme-dark" class="segment" type="button" role="radio"
+                            aria-checked="false" data-theme="dark"></button>
+                </div>
+            </fieldset>
+
+            <div class="setting-row">
+                <label class="switch" for="settings-confirm-risky">
+                    <input type="checkbox" id="settings-confirm-risky">
+                    <span class="switch-track" aria-hidden="true"></span>
+                    <span class="switch-text" id="settings-confirm-risky-label"></span>
+                </label>
+                <p id="settings-confirm-risky-hint" class="setting-hint"></p>
+            </div>
+
+            <div class="setting-row">
+                <label class="switch" for="settings-dry-run">
+                    <input type="checkbox" id="settings-dry-run">
+                    <span class="switch-track" aria-hidden="true"></span>
+                    <span class="switch-text" id="settings-dry-run-label"></span>
+                </label>
+                <p id="settings-dry-run-hint" class="setting-hint"></p>
+            </div>
+
+            <div class="modal-actions">
+                <button id="settings-reset-welcome" class="btn-secondary" type="button"></button>
+                <button id="settings-close" class="btn-primary" type="button"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         Bestätigung vor riskanten Zielen
+         ================================================================ -->
+    <div id="confirm-modal" class="modal is-hidden" role="dialog" aria-modal="true"
+         aria-labelledby="confirm-title">
+        <div class="modal-content">
+            <button id="confirm-close" class="modal-close" type="button">×</button>
+            <h2 id="confirm-title"></h2>
+            <p id="confirm-intro"></p>
+            <ul id="confirm-list" class="confirm-list"></ul>
+            <p id="confirm-warning" class="confirm-warning"></p>
+            <div class="modal-actions">
+                <button id="confirm-cancel" class="btn-secondary" type="button"></button>
+                <button id="confirm-accept" class="btn-danger" type="button"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fehler- und Statusmeldungen -->
+    <div id="toast" class="toast is-hidden" role="status" aria-live="polite"></div>
+
+</div>
+
+<script type="module" src="./main.js"></script>
+</body>
+</html>

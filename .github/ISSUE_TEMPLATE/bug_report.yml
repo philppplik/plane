@@ -1,0 +1,189 @@
+name: Fehler melden
+description: Etwas funktioniert nicht wie beschrieben — Bug report (English welcome)
+title: '[Fehler]: '
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke, dass Sie sich die Zeit nehmen. Je genauer der Bericht, desto
+        schneller die Korrektur.
+
+        *Thanks for taking the time. English reports are welcome — just fill in
+        the fields below in whichever language you prefer.*
+
+        **Sicherheitslücken gehören nicht hierher.** Nutzen Sie dafür die
+        privaten [Security Advisories](https://github.com/PhilippPaulik/plane/security/advisories/new).
+
+  - type: textarea
+    id: beschreibung
+    attributes:
+      label: Was ist passiert?
+      description: |
+        Beobachtetes Verhalten in eigenen Worten.
+        *What happened?*
+      placeholder: Nach dem Klick auf „Bereinigen" bleibt die Fortschrittsanzeige bei 0 % stehen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: erwartet
+    attributes:
+      label: Was hätten Sie erwartet?
+      description: |
+        *What did you expect to happen instead?*
+    validations:
+      required: true
+
+  - type: textarea
+    id: schritte
+    attributes:
+      label: Schritte zur Reproduktion
+      description: |
+        Nummerierte Schritte, mit denen sich der Fehler zuverlässig auslösen lässt.
+        *Numbered steps to reproduce.*
+      placeholder: |
+        1. Plane starten
+        2. „Analysieren" klicken und warten, bis das Ergebnis erscheint
+        3. Nur „Papierkorb" auswählen
+        4. „Bereinigen" klicken
+        5. Fortschrittsanzeige bleibt stehen
+    validations:
+      required: true
+
+  - type: dropdown
+    id: variante
+    attributes:
+      label: Welche Variante von Plane?
+      description: '*Which build of Plane?*'
+      options:
+        - Grafische Oberfläche (plane.exe)
+        - Kommandozeile / TUI (plane-cli.exe)
+        - Python-CLI (utils/cleaner.py)
+        - Weiß ich nicht
+    validations:
+      required: true
+
+  - type: input
+    id: plane_version
+    attributes:
+      label: Plane-Version
+      description: |
+        Steht unter „Über Plane" bzw. via `plane-cli --version`.
+        *Plane version — see the About screen or `plane-cli --version`.*
+      placeholder: '0.1.0'
+    validations:
+      required: true
+
+  - type: input
+    id: windows_version
+    attributes:
+      label: Windows-Version
+      description: |
+        `winver` ausführen und Ausgabe eintragen (Edition und Build).
+        *Run `winver` and paste edition plus build number.*
+      placeholder: 'Windows 11 Home 24H2, Build 26100.1742'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: architektur
+    attributes:
+      label: Prozessorarchitektur
+      description: |
+        Einstellungen → System → Info → „Systemtyp".
+        *Settings → System → About → “System type”.*
+      options:
+        - x64 (Intel / AMD)
+        - ARM64 (z. B. Snapdragon X)
+        - Weiß ich nicht
+    validations:
+      required: true
+
+  - type: dropdown
+    id: admin
+    attributes:
+      label: Mit Administratorrechten gestartet?
+      description: |
+        Viele Ziele in Systemordnern brauchen erhöhte Rechte.
+        *Was Plane run as administrator?*
+      options:
+        - 'Ja'
+        - 'Nein'
+        - Weiß ich nicht
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kategorie
+    attributes:
+      label: Betroffenes Reinigungsziel / betroffene Kategorie
+      description: |
+        Mehrfachauswahl möglich.
+        *Which cleaning target or category is affected? Multiple choices allowed.*
+      multiple: true
+      options:
+        - System (Temp, Prefetch, Update-Cache, Absturzberichte …)
+        - Browser (Caches, Verlauf, Cookies)
+        - Anwendungen (Discord, Teams, Spotify, VS Code …)
+        - Installationsdateien
+        - Papierkorb
+        - Registry
+        - Kein bestimmtes Ziel / betrifft die ganze App
+    validations:
+      required: true
+
+  - type: input
+    id: zielschluessel
+    attributes:
+      label: Exakter Zielschlüssel (falls bekannt)
+      description: |
+        Der stabile Schlüssel aus Katalog bzw. `plane-cli --list`.
+        *The stable target key, e.g. from `plane-cli --list`.*
+      placeholder: 'system.windowsupdate'
+
+  - type: textarea
+    id: ausgabe
+    attributes:
+      label: Fehlermeldung oder Protokollausgabe
+      description: |
+        Wird automatisch als Code formatiert — Backticks sind nicht nötig.
+        **Bitte vorher personenbezogene Pfade und Benutzernamen ersetzen**
+        (z. B. `C:\Users\annika\…` → `%USERPROFILE%\…`).
+
+        *Automatically rendered as code. Please redact personal paths and user
+        names first.*
+      render: text
+
+  - type: textarea
+    id: sonstiges
+    attributes:
+      label: Sonstiges
+      description: |
+        Antivirensoftware, OneDrive-Umleitung, ungewöhnliche Laufwerksbuchstaben,
+        Screenshots — alles, was helfen könnte.
+        *Anything else: antivirus, OneDrive redirection, unusual drive letters,
+        screenshots.*
+
+  - type: checkboxes
+    id: datenschutz
+    attributes:
+      label: Datenschutz
+      description: |
+        Issues sind öffentlich und dauerhaft im Internet einsehbar.
+        *Issues are public and permanently visible.*
+      options:
+        - label: >-
+            Ich habe geprüft, dass dieser Bericht **keine personenbezogenen
+            Daten** enthält — keine echten Benutzernamen, Dateipfade aus meinem
+            Profil, E-Mail-Adressen, Seriennummern oder Screenshots privater
+            Inhalte. Pfade habe ich durch `%VAR%`-Platzhalter ersetzt.
+            *(I confirm this report contains no personal data; paths replaced
+            with `%VAR%` placeholders.)*
+          required: true
+        - label: >-
+            Ich habe die bestehenden Issues durchsucht und keinen passenden
+            Bericht gefunden.
+            *(I searched existing issues first.)*
+          required: true

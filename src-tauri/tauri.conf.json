@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Plane",
+  "version": "0.1.0",
+  "identifier": "com.ppaul.plane",
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost"
+    },
+    "windows": [
+      {
+        "label": "main",
+        "title": "Plane",
+        "width": 840,
+        "height": 740,
+        "minWidth": 620,
+        "minHeight": 560,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": "msi",
+    "publisher": "Philipp Paulik",
+    "copyright": "© 2026 Philipp Paulik",
+    "license": "MIT",
+    "icon": [
+      "icons/icon.ico"
+    ]
+  }
+}

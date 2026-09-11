@@ -1,0 +1,11 @@
+# Laufzeitabhaengigkeiten des Python-Kerns (utils/cleaner.py)
+#
+# Installation:
+#   python -m pip install -r requirements.txt
+#
+# Hinweis: Die Tauri-App selbst braucht diese Pakete nicht - ihre
+# Reinigungslogik ist in Rust portiert (src-tauri/src/cleaning.rs). Die
+# Abhaengigkeit gilt nur fuer die eigenstaendige CLI und die Testsuite.
+
+# Systeminformationen (RAM, CPU, Laufwerksbelegung) in get_system_info().
+psutil==7.2.2

@@ -1,0 +1,9 @@
+# Entwicklungs- und Testabhaengigkeiten.
+#
+# Installation:
+#   python -m pip install -r requirements-dev.txt
+
+-r requirements.txt
+
+# Testframework der Suite unter tests/ (siehe docs/TESTS.md).
+pytest==9.1.1

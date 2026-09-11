@@ -1,0 +1,103 @@
+name: CI
+
+# Plane ist eine reine Windows-Anwendung. Alle Jobs laufen deshalb auf
+# windows-latest - ein Linux-Runner koennte weder die Tauri-App bauen noch die
+# windows-spezifischen Pfade der Engine sinnvoll pruefen.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Veraltete Laeufe desselben Branches abbrechen, sobald ein neuer Push kommt.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: short
+
+jobs:
+  rust:
+    name: Rust (fmt, clippy, test)
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: src-tauri
+
+    steps:
+      - name: Quellcode auschecken
+        uses: actions/checkout@v4
+
+      - name: Rust-Toolchain einrichten
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cargo-Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Formatierung pruefen
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Rust-Tests
+        run: cargo test --all-targets
+
+  python:
+    name: Python (pytest)
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Quellcode auschecken
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Abhaengigkeiten installieren
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      - name: Vertragstests
+        run: python -m pytest
+
+  frontend:
+    name: Frontend (Vite-Build)
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Quellcode auschecken
+        uses: actions/checkout@v4
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Abhaengigkeiten installieren
+        run: npm ci
+
+      - name: Frontend bauen
+        run: npm run build
