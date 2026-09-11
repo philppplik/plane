@@ -39,7 +39,10 @@ schlägt fehl, sobald jemand `tauri::` in ein Engine-Modul schreibt.
 │  │ WAS      │  │ WAS WÄRE│ │ TATSÄCHLICH TUN │ │
 │  └──────────┘  └────────┘  └─────────────────┘ │
 │  fsutil · process · registry · recyclebin ·     │
-│  installers · runtime · types                   │
+│  installers · runtime · types · log · elevation  │
+│                                                  │
+│  Daneben, ohne Bezug zur Reinigung:              │
+│  uninstall · tweaks · icons · update             │
 └─────────────────────────────────────────────────┘
            │
 ┌──────────▼──────────┐   ┌──────────────────────┐
@@ -47,6 +50,20 @@ schlägt fehl, sobald jemand `tauri::` in ein Engine-Modul schreibt.
 │  Einstellungen,JSON │   │  Deutsch + Englisch  │
 └─────────────────────┘   └──────────────────────┘
 ```
+
+Vier Module gehören nicht zum Reinigungsablauf, teilen sich aber dieselbe
+Regel „kennt keine Oberfläche":
+
+| Modul | Aufgabe | Besonderheit |
+|-------|---------|--------------|
+| `uninstall` | Programme auflisten und entfernen | startet fremde Deinstaller, löscht selbst nichts |
+| `tweaks` | Windows-Einstellungen | Journal mit dem **vorgefundenen** Zustand |
+| `icons` | Programmsymbole aus `.exe`/`.dll`/`.ico` | liefert rohe RGBA-Punkte, kein PNG |
+| `update` | Suche nach neuen Versionen | **der einzige Netzwerkzugriff**, standardmäßig aus |
+
+`update` ist die eine Ausnahme vom Offline-Versprechen. Ein Vertragstest
+(`test_netzwerkzugriff_gibt_es_nur_an_einer_stelle`) verhindert, dass
+anderswo ein zweiter Zugang entsteht.
 
 ## Die zwei Phasen
 
@@ -161,7 +178,8 @@ Registry-Einträge als „verwaist" melden. Details in
 | `src-tauri/src/commands.rs` | Tauri-Brücke. Keine Logik |
 | `src-tauri/src/state.rs` | Einstellungen, Persistenz |
 | `src-tauri/src/i18n.rs` | Sprachkatalog |
-| `src-tauri/src/bin/` | Kommandozeile und TUI |
+| `src-tauri/src/cli/` | Kommandozeile und TUI |
+| `src-tauri/src/bin/` | Einstiegspunkt von `plane-cli` |
 | `src-tauri/capabilities/` | Tauri-2-Berechtigungen |
 | `frontend/` | Oberfläche (Vanilla JS, Vite) |
 | `tests/` | Statische Vertragstests (pytest) |

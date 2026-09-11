@@ -143,14 +143,26 @@ löscht nie pauschal.
 | `skipped` / `skip_reason` | Bewusst nicht ausgeführt – **kein** Fehlschlag |
 | `freed` | Tatsächlich freigegebene Bytes, vor dem Löschen gemessen |
 | `removed_items` | Anzahl entfernter Einträge |
+| `locked_items` | Von einem anderen Programm geöffnet. **Kein Fehler** |
+| `denied_items` | Rechte reichten nicht. Adminrechte helfen meistens |
+| `blocked_items` | Windows verweigert das Durchlaufen grundsätzlich. Adminrechte helfen **nicht** |
 | `errors` | Fehlermeldungen, teils als Übersetzungsschlüssel |
 
 `CleanReport` ergänzt: `success` · `total_freed` · `total_removed` ·
-`duration_ms` · `cancelled` · `registry_backup` (Pfad der `.reg`-Sicherung) ·
-`error`.
+`total_locked` · `total_denied` · `total_blocked` · `duration_ms` ·
+`cancelled` · `registry_backup` (Pfad der `.reg`-Sicherung) · `error`.
 
 `success` ist `false`, sobald ein Ziel **fehlgeschlagen** ist. Übersprungene
-Ziele zählen ausdrücklich nicht als Fehler.
+Ziele zählen ausdrücklich nicht als Fehler — und die drei Zähler oben
+ebenfalls nicht.
+
+**Warum drei Zähler statt einer Fehlerliste.** Auf einem laufenden Windows
+ist immer irgendeine Cache-Datei geöffnet, und einige Ordner öffnet Windows
+grundsätzlich niemandem. Das als Fehler zu melden erzeugt eine Wand roter
+Zeilen für einen völlig normalen Zustand und lässt echte Fehler darin
+untergehen. Jeder Zähler steht für eine andere Antwort auf „was kann ich
+dagegen tun?" — Programm schließen, mit Rechten neu starten, oder nichts,
+weil es nichts zu tun gibt.
 
 ### `Progress`
 
@@ -194,6 +206,8 @@ vorzutäuschen.
 | `confirm_risky` | `bool` | **`true`** | Vor `Caution`-Zielen nachfragen |
 | `dry_run_default` | `bool` | `false` | Läufe standardmäßig simulieren |
 | `selected_targets` | `Vec<String>` | leer | Zuletzt gewählte Ziele |
+| `check_updates` | `bool` | **`false`** | Beim Start bei GitHub nach einer neueren Version fragen. Der einzige Netzwerkzugriff — deshalb standardmäßig aus |
+| `skipped_version` | `String` | leer | Version, für die der Nutzer „nicht mehr erinnern" gewählt hat |
 
 ### `AppState`
 
@@ -242,9 +256,22 @@ Standardzustand, nicht zum Startabbruch.
 | `scan` | `targets: string[]` | `ScanReport` |
 | `clean` | `request: CleanRequest` | `CleanReport` |
 | `cancel_run` | – | – |
+| `restart_as_admin` | – | `"already"` \| `"restarting"` |
+| `get_log` | – | `String` |
+| `get_log_path` | – | `String` |
+| `list_programs` | – | `Programm[]` |
+| `uninstall_program` | `program`, `quiet` | `UninstallResult` |
+| `get_program_icons` | `sources: string[]` | `(ProgramIcon \| null)[]` |
+| `list_tweaks` | – | `TweakStatus[]` |
+| `set_tweak` | `key`, `enabled` | `TweakState` |
+| `revert_tweak` | `key` | `TweakState` |
+| `check_update` | – | `UpdateInfo` |
+| `open_release_page` | – | – |
+| `skip_version` | `version` | – |
 
-Alle geben `Result<T, String>` zurück. `scan` und `clean` laufen über
-`spawn_blocking`; währenddessen kommen `plane://progress`-Events.
+Alle geben `Result<T, String>` zurück. Alles, was länger als einen
+Wimpernschlag dauert, läuft über `spawn_blocking`; bei `scan` und `clean`
+kommen währenddessen `plane://progress`-Events.
 
 ### Antworttypen
 
@@ -260,6 +287,24 @@ wird **berechnet**, nie separat gepflegt; Division durch null ist abgefangen.
 `TargetInfo` — `key`, `category`, `name_key`, `description_key`, `risk`,
 `requires_admin`, `default_enabled`, `suggestion_only`. Die Oberfläche bekommt
 **Schlüssel**, keine Texte – so wechselt die Sprache ohne Neuladen der Ziele.
+
+`Programm` — `id`, `name`, `version`, `publisher`, `install_date`, `size`,
+`source` (`machine` \| `machine32` \| `user` \| `store`), `removable`,
+`protection` (Übersetzungsschlüssel des Grundes), `quiet`, `requires_admin`,
+`icon` (Rohwert von `DisplayIcon`).
+
+`ProgramIcon` — `width`, `height`, `rgba` (base64-kodierte RGBA-Bildpunkte,
+zeilenweise von oben). Bewusst kein PNG: das spart einen Kodierer im
+Rust-Teil, und es entstehen keine `data:`-Adressen, die an der
+Content-Security-Policy hängen bleiben könnten. Die Oberfläche zeichnet die
+Punkte auf ein `canvas`.
+
+`TweakStatus` — `key`, `group`, `state` (`on` \| `off` \| `mixed`),
+`requires_admin`, `apply` (`immediate` \| `explorer` \| `restart`),
+`unsupported`, `managed`.
+
+`UpdateInfo` — `current`, `latest`, `newer`, `url`, `published`. Die Adresse
+stammt **aus dem Programm**, nicht aus der Antwort von GitHub.
 
 ---
 

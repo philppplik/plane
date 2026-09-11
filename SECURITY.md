@@ -37,11 +37,11 @@ Architektur.
 ### Was Plane tut
 
 - Löscht Dateien in Benutzer- und Systemverzeichnissen
-- Leert den Papierkorb über die Shell-API
+- Leert den Papierkorb über `SHEmptyRecycleBinW`, die Shell-API von Windows
 - Entfernt Registry-Werte in einer eng begrenzten Auswahl von Schlüsseln
 - Startet eine Handvoll Windows-Dienste neu (`wuauserv`, `bits`, `FontCache`,
   `DoSvc`)
-- Führt `ipconfig /flushdns` und `Clear-RecycleBin` aus
+- Führt `ipconfig /flushdns` aus
 
 ### Was Plane nicht tut
 

@@ -19,7 +19,7 @@ python -m pytest
 ```
 
 Erwarteter Zustand: **beide Suiten grün**, ohne übersprungene oder erwartet
-fehlschlagende Tests. 315 Rust-Testfälle, 63 Python-Testfälle, zusammen unter
+fehlschlagende Tests. 324 Rust-Testfälle, 63 Python-Testfälle, zusammen unter
 30 Sekunden.
 
 ### Voraussetzungen

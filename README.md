@@ -54,8 +54,9 @@ Simulationsmodus zeigt jederzeit, was passieren *würde*.
 - **Programme deinstallieren** — installierte Software auflisten und entfernen,
   mit Programmsymbol, Größe und Herkunft, und mit Schutz für Laufzeitpakete,
   Treiber und Systembestandteile
-- **Windows-Einstellungen** — 19 kuratierte, umkehrbare Punkte zu Datenschutz,
-  Explorer, Taskleiste und Leistung
+- **Windows Tweaks** — 19 kuratierte, umkehrbare Punkte zu Datenschutz,
+  Explorer, Taskleiste und Leistung. Zurückgenommen wird auf den Zustand, den
+  Plane **vorgefunden** hat, nicht auf einen angenommenen Standard
 - **Kommandozeile und TUI** für alles, was die Oberfläche kann
 - **Keine Telemetrie.** Plane zählt nichts, meldet nichts und legt kein Profil
   an — weder anonym noch sonstwie
