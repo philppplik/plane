@@ -45,6 +45,16 @@
                         <span class="nav-icon" aria-hidden="true">▤</span>
                         <span class="nav-label" data-i18n="nav.dashboard"></span>
                     </button>
+                    <button id="nav-programs" class="nav-item" type="button"
+                            data-screen="programs">
+                        <span class="nav-icon" aria-hidden="true">▣</span>
+                        <span class="nav-label" data-i18n="nav.programs"></span>
+                    </button>
+                    <button id="nav-tweaks" class="nav-item" type="button"
+                            data-screen="tweaks">
+                        <span class="nav-icon" aria-hidden="true">◈</span>
+                        <span class="nav-label" data-i18n="nav.tweaks"></span>
+                    </button>
                     <button id="nav-about" class="nav-item" type="button" data-screen="about">
                         <span class="nav-icon" aria-hidden="true">◍</span>
                         <span class="nav-label" data-i18n="nav.about"></span>
@@ -128,6 +138,55 @@
                         <p id="result-backup" class="result-backup" hidden></p>
                         <ul id="result-list" class="result-list"></ul>
                     </section>
+                </section>
+
+                <!-- ---------- Programme ---------- -->
+                <section id="programs-screen" class="view is-hidden"
+                         aria-labelledby="programs-title">
+                    <header class="view-head">
+                        <h1 id="programs-title"></h1>
+                        <p id="programs-subtitle" class="view-subtitle"></p>
+                    </header>
+
+                    <div class="toolbar">
+                        <label class="field">
+                            <span class="visually-hidden" id="programs-search-label"></span>
+                            <input type="search" id="programs-search"
+                                   aria-labelledby="programs-search-label">
+                        </label>
+                        <label class="switch" for="programs-show-protected">
+                            <input type="checkbox" id="programs-show-protected">
+                            <span class="switch-track" aria-hidden="true"></span>
+                            <span class="switch-text" id="programs-protected-label"></span>
+                        </label>
+                        <span id="programs-count" class="toolbar-note"></span>
+                    </div>
+
+                    <div id="programs-skeleton" class="skeleton-list" aria-hidden="true">
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                    </div>
+
+                    <div id="programs-list" class="entry-list" role="list"></div>
+                </section>
+
+                <!-- ---------- Einstellungen anpassen ---------- -->
+                <section id="tweaks-screen" class="view is-hidden"
+                         aria-labelledby="tweaks-title">
+                    <header class="view-head">
+                        <h1 id="tweaks-title"></h1>
+                        <p id="tweaks-subtitle" class="view-subtitle"></p>
+                        <p id="tweaks-omitted" class="notice notice-info"></p>
+                    </header>
+
+                    <div id="tweaks-skeleton" class="skeleton-list" aria-hidden="true">
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                    </div>
+
+                    <div id="tweaks-list" class="tweak-groups"></div>
                 </section>
 
                 <!-- ---------- Über Plane ---------- -->

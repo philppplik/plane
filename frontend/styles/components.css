@@ -449,6 +449,116 @@ select {
 .about-footer { font-size: 0.76rem; color: var(--text-schwach); margin-top: 16px; }
 
 /* ---------------------------------------------------------------------------
+   Ansichtskopf – gemeinsam für Programme und Windows-Einstellungen
+   --------------------------------------------------------------------------- */
+
+.view-head { display: flex; flex-direction: column; gap: 8px; }
+.view-head h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(1.4rem, 1.1rem + 1.2vw, 2rem);
+    color: var(--text-stark);
+}
+.view-subtitle { font-size: 0.9rem; color: var(--text-schwach); max-width: 68ch; }
+
+.notice {
+    font-size: 0.82rem; line-height: 1.5;
+    padding: 10px 14px; border-radius: 12px;
+    border-left: 3px solid var(--rand);
+    background: var(--flaeche-2);
+    max-width: 78ch;
+}
+.notice-info { border-left-color: var(--accent-dark); }
+
+.toolbar-note { font-size: 0.8rem; color: var(--text-schwach); margin-left: auto; }
+.empty-note { font-size: 0.88rem; color: var(--text-schwach); padding: 18px 2px; }
+
+.field { display: inline-flex; flex: 1 1 240px; min-width: 0; }
+.field input {
+    width: 100%; font-family: inherit; font-size: 0.9rem;
+    padding: 8px 12px; border-radius: 11px;
+    border: 1px solid var(--rand); background: var(--flaeche);
+    color: var(--text);
+}
+.field input:focus-visible { outline: 2px solid var(--fokus); outline-offset: 1px; }
+
+.btn-small { padding: 6px 14px; font-size: 0.82rem; white-space: nowrap; }
+
+/* ---------------------------------------------------------------------------
+   Programme
+   ---------------------------------------------------------------------------
+   Eine Zeile je Eintrag: Name und Herkunft links, Größe rechts, der Knopf
+   ganz außen. Geschützte Einträge bleiben lesbar, aber gedämpft – sie sind
+   Information, keine Handlungsmöglichkeit.
+   --------------------------------------------------------------------------- */
+
+.entry-list { display: flex; flex-direction: column; gap: 8px; }
+
+.entry {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px; border-radius: 14px;
+    border: 1px solid var(--rand); background: var(--flaeche-2);
+    min-width: 0;
+}
+.entry.is-protected { opacity: 0.62; }
+.entry-body { flex: 1; min-width: 0; }
+.entry-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.entry-name {
+    font-weight: 700; color: var(--text-stark);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.entry-meta { font-size: 0.78rem; color: var(--text-schwach); margin-top: 3px; }
+.entry-note { font-size: 0.78rem; color: var(--achtung); margin-top: 3px; }
+.entry-size {
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+    font-size: 0.85rem; color: var(--text-schwach);
+}
+.badge-source { background: var(--schiene); }
+.badge-muted { background: var(--schiene); color: var(--text-schwach); }
+
+/* ---------------------------------------------------------------------------
+   Windows-Einstellungen
+   ---------------------------------------------------------------------------
+   Jeder Punkt zeigt drei Dinge übereinander: was er tut, was er kostet und
+   in welchem Zustand er gerade ist. Der Schalter kennt „unbestimmt" – das ist
+   der Zustand „teilweise", den andere Werkzeuge unterschlagen.
+   --------------------------------------------------------------------------- */
+
+.tweak-groups { display: flex; flex-direction: column; gap: 22px; }
+.tweak-group-title {
+    font-family: var(--font-serif); font-size: 1.05rem;
+    color: var(--text-stark); margin-bottom: 10px;
+}
+.tweak-rows { display: flex; flex-direction: column; gap: 8px; }
+
+.tweak-row {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 12px 16px; border-radius: 14px;
+    border: 1px solid var(--rand); background: var(--flaeche-2);
+    min-width: 0;
+}
+.tweak-row.is-locked { opacity: 0.62; }
+.tweak-main { display: flex; gap: 14px; flex: 1; min-width: 0; cursor: pointer; }
+.tweak-row.is-locked .tweak-main { cursor: default; }
+.tweak-main .switch { margin-top: 2px; }
+.tweak-body { min-width: 0; }
+.tweak-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.tweak-name { font-weight: 700; color: var(--text-stark); }
+.tweak-desc { font-size: 0.85rem; margin-top: 4px; max-width: 70ch; }
+.tweak-effect { font-size: 0.78rem; color: var(--text-schwach); margin-top: 3px; }
+.tweak-note { font-size: 0.78rem; color: var(--achtung); margin-top: 4px; }
+
+/* Unbestimmt: halb gefüllt, Knopf mittig – weder an noch aus. */
+.switch input:indeterminate + .switch-track {
+    background: linear-gradient(90deg, var(--accent-dark) 50%, var(--schiene) 50%);
+}
+.switch input:indeterminate + .switch-track::after { transform: translateX(9px); }
+.switch input:disabled + .switch-track { opacity: 0.5; }
+
+.badge-state-on { background: rgba(167, 236, 91, 0.3); }
+.badge-state-off { background: var(--schiene); color: var(--text-schwach); }
+.badge-state-mixed { background: var(--warnung-flaeche); color: var(--achtung); }
+
+/* ---------------------------------------------------------------------------
    Responsiv
    ---------------------------------------------------------------------------
    Das Fenster ist ab 620x560 skalierbar. Drei Stufen: volle Seitenleiste,
@@ -481,6 +591,7 @@ select {
     .target-row { flex-wrap: wrap; }
     .target-figures { text-align: left; }
     .about-head { gap: 12px; }
+    .entry, .tweak-row { flex-wrap: wrap; }
 }
 
 @media (max-width: 620px) {
@@ -491,6 +602,8 @@ select {
     .hero-actions .btn-primary { width: 100%; }
     .toolbar { gap: 8px; }
     .btn-secondary { flex: 1 1 auto; }
+    .toolbar-note { margin-left: 0; width: 100%; }
+    .entry-size { margin-left: auto; }
     .overlay-card { padding: 20px 18px; }
     .setting-row { flex-direction: column; gap: 8px; }
     .welcome-card { padding: 36px 24px; }

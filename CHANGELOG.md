@@ -7,9 +7,15 @@ die Versionierung [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
-Der Umbau vom Prototyp zum vollwertigen Cleaner. Noch keine Veröffentlichung —
-die Version bleibt bei 0.1.0, bis Signierung und ein erster Testlauf auf
-fremden Geräten stehen.
+Nichts.
+
+## [0.2.0] — 2026-09-11
+
+Der Umbau vom Prototyp zum vollwertigen Cleaner — und zwei neue Werkzeuge
+daneben: **Plane Uninstaller** und **Plane Tweaker**.
+
+> Die Installationspakete sind **nicht signiert**. Windows SmartScreen wird
+> beim ersten Start warnen. Siehe [SECURITY.md](SECURITY.md).
 
 ### Hinzugefügt
 
@@ -32,8 +38,31 @@ fremden Geräten stehen.
   Risikostufe für die Anzeige. Riskante Ziele sind nie vorausgewählt.
 - **Mehrsprachigkeit Deutsch/Englisch** mit einem gemeinsamen Sprachkatalog für
   Oberfläche, Kommandozeile und TUI.
+- **Plane Uninstaller.** Installierte Programme auflisten und entfernen —
+  aus allen vier Quellen (`HKLM` 64-Bit und 32-Bit, `HKCU`, Store/MSIX). Plane
+  löscht nichts selbst, sondern startet den Deinstaller des Herstellers und
+  prüft danach, ob der Registry-Eintrag verschwunden ist. Laufzeitpakete,
+  Treiber, Sicherheitssoftware, Windows-Bestandteile und Plane selbst sind
+  gesperrt, jeweils mit genanntem Grund. Die msiexec-Exitcodes werden
+  ausgewertet: Neustart nötig, bereits deinstalliert, vom Nutzer abgebrochen,
+  durch Richtlinie verboten — statt einer pauschalen Fehlermeldung.
+- **Plane Tweaker.** 19 kuratierte Windows-Einstellungen in fünf Gruppen
+  (Datenschutz, Explorer, Taskleiste, Leistung, System). Jeder Punkt nennt
+  seine **Nebenwirkung**, nicht nur seinen Nutzen. Zurücknehmen stellt den
+  Zustand wieder her, den Plane **tatsächlich vorgefunden** hat — inklusive
+  des Falls „der Wert existierte vorher gar nicht" —, nicht einen angenommenen
+  Windows-Standard. Punkte, die nur unter Windows 11 wirken oder unter einer
+  Gruppenrichtlinie stehen, werden als solche gekennzeichnet statt wirkungslos
+  gesetzt. Was bewusst **nicht** angeboten wird und warum, steht in
+  [docs/TWEAKS.md](docs/TWEAKS.md#bewusst-nicht-angeboten).
+- **Fehlerprotokoll** unter `%APPDATA%\com.ppaul.plane\plane.log`, ohne
+  einzelne Dateipfade, mit Rotation bei 1 MB.
+- **Neustart mit Administratorrechten** aus der Anwendung heraus.
 - **Kommandozeile `plane-cli`** mit den Unterbefehlen `list`, `scan`, `clean`,
-  `info` und `tui`, JSON-Ausgabe für Skripte und sinnvollen Exitcodes.
+  `info`, `programs`, `uninstall`, `tweaks` und `tui`, JSON-Ausgabe für
+  Skripte und sinnvollen Exitcodes.
+- **Installationsskripte** für die Kommandozeile (`scripts/install-cli.ps1`
+  mit SHA-256-Prüfung, `scripts/install-cli.bat`).
 - **Textoberfläche (TUI)** mit ASCII-Logo, Kategorien- und Zielauswahl,
   Fortschrittsbalken und vollständiger Tastaturbedienung.
 - **Fortschrittsanzeige** in allen drei Oberflächen: Prozentwert, aktuelles
@@ -49,7 +78,8 @@ fremden Geräten stehen.
   Dienststopp.
 - **Dokumentation**: `docs/ARCHITEKTUR.md`, `docs/DATENSTRUKTUREN.md`,
   `docs/REINIGUNGSZIELE.md` (inklusive der bewussten Auslassungen),
-  `docs/TESTS.md`.
+  `docs/TWEAKS.md`, `docs/CLI.md`, `docs/TESTS.md`, `CONTRIBUTING.md`,
+  `SECURITY.md`, `THIRD-PARTY-NOTICES.md`.
 - **CI** für Rust, Python und Frontend; Veröffentlichungs-Workflow für
   x86-64 **und** ARM64.
 
@@ -63,7 +93,9 @@ fremden Geräten stehen.
 - Der Zielkatalog ist datengetrieben: ein neues Ziel besteht aus einem Eintrag
   plus zwei Übersetzungen, ohne neuen Code.
 - Oberfläche vollständig neu aufgebaut: Kategorien mit Gesamtgrößen,
-  Einzelauswahl, Risikohinweise, Ergebnisansicht.
+  Einzelauswahl, Risikohinweise, Ergebnisansicht. Dazu zwei neue Ansichten in
+  der Seitenleiste — **Programme** und **Einstellungen anpassen** —, die erst
+  beim ersten Öffnen laden, weil beide die Registry abfragen.
 - Anwendungslogik aus `main.rs` in die Bibliothek verschoben; Unit-Tests laufen
   dadurch einmal statt doppelt.
 
@@ -84,6 +116,11 @@ fremden Geräten stehen.
   - Windows 11 wurde als Windows 10 angezeigt.
 - Analyse um etwa den Faktor 8 beschleunigt: rekursive Muster vermaßen
   denselben Verzeichnisbaum mehrfach.
+- **Gesperrte Dateien sind keine Fehler mehr.** Eine Datei, die gerade von
+  einem laufenden Programm benutzt wird (Windows-Fehler 32/33) oder für die
+  die Rechte fehlen (Fehler 5), wurde als Fehlschlag gemeldet — ein völlig
+  normaler Lauf sah dadurch kaputt aus. Beides wird jetzt getrennt gezählt und
+  als Hinweis ausgewiesen; der Lauf gilt weiterhin als erfolgreich.
 
 ### Sicherheit
 

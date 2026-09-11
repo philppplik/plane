@@ -33,6 +33,8 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
 
     // --- Navigation ------------------------------------------------------
     ("nav.dashboard", "Übersicht", "Dashboard"),
+    ("nav.programs", "Programme", "Programs"),
+    ("nav.tweaks", "Einstellungen anpassen", "Adjust settings"),
     ("nav.about", "Über Plane", "About Plane"),
     ("nav.settings", "Einstellungen", "Settings"),
     ("nav.back", "Zurück zur Übersicht", "Back to dashboard"),
@@ -110,6 +112,8 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     ("uninstall.subtitle", "Installierte Programme ansehen und entfernen. Plane startet den Deinstaller des jeweiligen Herstellers – es löscht nichts selbst.", "View and remove installed programs. Plane starts each vendor's own uninstaller – it deletes nothing itself."),
     ("uninstall.search", "Suchen", "Search"),
     ("uninstall.count", "{0} Programme, {1} gesperrt", "{0} programs, {1} protected"),
+    ("uninstall.show_protected", "Gesperrte Einträge anzeigen", "Show protected entries"),
+    ("uninstall.no_match", "Kein Programm passt zu dieser Suche.", "No program matches this search."),
     ("uninstall.remove", "Deinstallieren", "Uninstall"),
     ("uninstall.removing", "Deinstalliere {0} …", "Uninstalling {0} …"),
     ("uninstall.confirm", "„{0}“ wirklich deinstallieren? Plane startet dazu den Deinstaller des Herstellers.", "Really uninstall “{0}”? Plane will start the vendor’s uninstaller."),
@@ -509,6 +513,22 @@ mod tests {
                 "{}: Nebenwirkung zu knapp: {wirkung}",
                 tweak.key
             );
+        }
+    }
+
+    /// Jede Ansicht der Oberfläche braucht ihre Beschriftung in der
+    /// Seitenleiste – sonst steht dort der rohe Schlüssel.
+    #[test]
+    fn jede_ansicht_hat_eine_navigationsbeschriftung() {
+        for schluessel in [
+            "nav.dashboard",
+            "nav.programs",
+            "nav.tweaks",
+            "nav.about",
+            "nav.settings",
+        ] {
+            assert_ne!(t("de", schluessel), schluessel, "fehlt: {schluessel}");
+            assert_ne!(t("en", schluessel), schluessel, "fehlt: {schluessel}");
         }
     }
 

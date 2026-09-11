@@ -64,3 +64,17 @@ export const bereinige = (targets, onlyPaths = [], dryRun = false) =>
     rufe('clean', { request: { targets, only_paths: onlyPaths, dry_run: dryRun } }, null);
 
 export const brichAb = () => rufe('cancel_run');
+
+// --- Programme -------------------------------------------------------------
+
+export const holeProgramme = () => rufe('list_programs', undefined, []);
+
+/** `quiet` versucht eine Deinstallation ohne Dialog des Herstellers. */
+export const deinstalliere = (program, quiet) =>
+    rufe('uninstall_program', { program, quiet }, null);
+
+// --- Windows-Einstellungen -------------------------------------------------
+
+export const holeTweaks = () => rufe('list_tweaks', undefined, []);
+export const setzeTweak = (key, enabled) => rufe('set_tweak', { key, enabled }, null);
+export const nimmTweakZurueck = (key) => rufe('revert_tweak', { key }, null);

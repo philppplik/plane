@@ -18,8 +18,10 @@ import * as api from './src/api.js';
 import * as about from './src/about.js';
 import * as dashboard from './src/dashboard.js';
 import * as progress from './src/progress.js';
+import * as programs from './src/programs.js';
 import * as run from './src/run.js';
 import * as settings from './src/settings.js';
+import * as tweaks from './src/tweaks.js';
 import * as fmt from './src/format.js';
 import { $, zeige } from './src/dom.js';
 import { setzeKatalog, t, uebersetzeMarkup } from './src/i18n.js';
@@ -36,8 +38,18 @@ const TOAST_DAUER_MS = 6000;
 const BILDSCHIRME = {
     welcome: 'welcome-screen',
     home: 'home-screen',
+    programs: 'programs-screen',
+    tweaks: 'tweaks-screen',
     about: 'about-screen',
 };
+
+/** Navigationsknopf → Bildschirm. */
+const NAVIGATION = [
+    ['nav-home', 'home'],
+    ['nav-programs', 'programs'],
+    ['nav-tweaks', 'tweaks'],
+    ['nav-about', 'about'],
+];
 
 let toastZeitgeber = null;
 
@@ -51,17 +63,20 @@ let toastZeitgeber = null;
  * Ein fehlgeschlagener Backend-Aufruf darf nicht stumm in der Konsole landen –
  * für den Nutzer sähe das aus, als passiere einfach nichts.
  */
-function zeigeFehler(nachricht) {
+function zeigeMeldung(nachricht, istFehler = true) {
     const toast = $('toast');
     if (!toast) return;
 
     toast.textContent = nachricht;
     toast.classList.remove('is-hidden');
-    toast.classList.add('is-error');
+    toast.classList.toggle('is-error', istFehler);
 
     clearTimeout(toastZeitgeber);
     toastZeitgeber = setTimeout(() => toast.classList.add('is-hidden'), TOAST_DAUER_MS);
 }
+
+/** Kurzform für den häufigsten Fall. */
+const zeigeFehler = (nachricht) => zeigeMeldung(nachricht, true);
 
 // ---------------------------------------------------------------------------
 // Bildschirme
@@ -81,9 +96,11 @@ function zeigeBildschirm(name) {
     zeige($('welcome-screen'), istWillkommen);
     zeige($('shell-screen'), !istWillkommen);
     zeige($('home-screen'), ziel === 'home');
+    zeige($('programs-screen'), ziel === 'programs');
+    zeige($('tweaks-screen'), ziel === 'tweaks');
     zeige($('about-screen'), ziel === 'about');
 
-    for (const [id, schirm] of [['nav-home', 'home'], ['nav-about', 'about']]) {
+    for (const [id, schirm] of NAVIGATION) {
         const knopf = $(id);
         if (!knopf) continue;
         knopf.classList.toggle('is-active', schirm === ziel);
@@ -94,8 +111,15 @@ function zeigeBildschirm(name) {
         }
     }
 
+    // Programme und Windows-Einstellungen werden erst beim ersten Öffnen
+    // geladen: beides fragt die Registry ab und kostet spürbar Zeit, die
+    // beim Start niemand verschenken möchte.
     if (ziel === 'about') {
         about.lade().then(about.zeichne);
+    } else if (ziel === 'programs') {
+        programs.lade().catch((fehler) => zeigeFehler(`${fehler}`));
+    } else if (ziel === 'tweaks') {
+        tweaks.lade().catch((fehler) => zeigeFehler(`${fehler}`));
     }
 }
 
@@ -119,6 +143,8 @@ async function ladeSprache(kuerzel) {
     dashboard.zeichne();
     settings.beschrifte();
     about.zeichne();
+    programs.beschrifte();
+    tweaks.beschrifte();
 }
 
 /** Texte, die außerhalb der Module liegen (Willkommen, Seitenleiste). */
@@ -196,6 +222,8 @@ async function starte() {
         aenderung: () => dashboard.zeichne(),
     });
     settings.spiegele();
+    programs.verdrahte({ meldung: zeigeMeldung });
+    tweaks.verdrahte({ meldung: zeigeMeldung });
 
     $('welcome-start')?.addEventListener('click', async () => {
         zeigeBildschirm(await api.starteApp());
@@ -203,6 +231,8 @@ async function starte() {
     $('nav-home')?.addEventListener('click', async () => {
         zeigeBildschirm(await api.zeigeUebersicht());
     });
+    $('nav-programs')?.addEventListener('click', () => zeigeBildschirm('programs'));
+    $('nav-tweaks')?.addEventListener('click', () => zeigeBildschirm('tweaks'));
     $('nav-about')?.addEventListener('click', async () => {
         zeigeBildschirm(await api.zeigeUeber());
     });

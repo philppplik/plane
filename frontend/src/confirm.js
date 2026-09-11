@@ -19,13 +19,35 @@ import { t } from './i18n.js';
 export function freigabeEinholen(punkte) {
     if (!punkte || punkte.length === 0) return Promise.resolve(true);
 
+    return frageNach({
+        titel: t('confirm.title'),
+        einleitung: t('confirm.intro'),
+        punkte,
+        warnung: t('confirm.warning'),
+        zustimmen: t('confirm.accept'),
+    });
+}
+
+/**
+ * Denselben Dialog für eine einzelne Rückfrage nutzen.
+ *
+ * Deinstallation und Windows-Einstellungen brauchen dieselbe Fokusfalle und
+ * dieselbe Tastaturbedienung wie die Bereinigung – ein zweiter Dialog wäre
+ * eine zweite Fehlerquelle.
+ *
+ * @param {{titel: string, einleitung: string, punkte?: Array,
+ *          warnung?: string, zustimmen: string}} vorgabe
+ * @returns {Promise<boolean>}
+ */
+export function frageNach({ titel, einleitung, punkte = [], warnung = '', zustimmen }) {
     return new Promise((resolve) => {
         const modal = $('confirm-modal');
 
-        $('confirm-title').textContent = t('confirm.title');
-        $('confirm-intro').textContent = t('confirm.intro');
-        $('confirm-warning').textContent = t('confirm.warning');
-        $('confirm-accept').textContent = t('confirm.accept');
+        $('confirm-title').textContent = titel;
+        $('confirm-intro').textContent = einleitung;
+        $('confirm-warning').textContent = warnung;
+        zeige($('confirm-warning'), Boolean(warnung));
+        $('confirm-accept').textContent = zustimmen;
         $('confirm-cancel').textContent = t('confirm.cancel');
         $('confirm-close').setAttribute('aria-label', t('confirm.cancel'));
 

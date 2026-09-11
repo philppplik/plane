@@ -1,6 +1,6 @@
 [package]
 name = "plane"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Plane - schlanker Windows-PC-Cleaner"
 # Die Binaries werden unten ausdrücklich aufgeführt; ohne dies fände Cargo

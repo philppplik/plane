@@ -145,6 +145,20 @@ verlangen, ohnehin mit Ihrer IT abstimmen.
 
 ---
 
+## In der Oberfläche
+
+Seitenleiste → **Einstellungen anpassen**. Die Punkte sind nach den fünf
+Gruppen sortiert; jeder zeigt seinen Zustand als Abzeichen, seine
+Nebenwirkung als eigene Zeile und wann die Änderung greift.
+
+Der Schalter kennt drei Stellungen: an, aus und **unbestimmt** — letzteres für
+„Teilweise". Neben jedem Punkt steht **Zurücknehmen**; das ist nicht dasselbe
+wie Ausschalten (siehe unten). Punkte, die auf diesem System wirkungslos sind
+oder unter einer Gruppenrichtlinie stehen, sind gesperrt und gedämpft
+dargestellt statt versteckt — wer sie sucht, soll erfahren, warum sie fehlen.
+
+Punkte mit Administratorrechten fragen vorher nach.
+
 ## Kommandozeile
 
 ```bash

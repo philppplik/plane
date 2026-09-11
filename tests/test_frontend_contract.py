@@ -66,8 +66,30 @@ def test_es_gibt_genau_eine_html_datei():
 
 def test_alle_bildschirme_liegen_im_markup():
     quelle = _lies(INDEX)
-    for element_id in ("welcome-screen", "shell-screen", "home-screen", "about-screen"):
+    for element_id in (
+        "welcome-screen",
+        "shell-screen",
+        "home-screen",
+        "programs-screen",
+        "tweaks-screen",
+        "about-screen",
+    ):
         assert f'id="{element_id}"' in quelle, f"Bildschirm fehlt: {element_id}"
+
+
+def test_jeder_navigationsknopf_fuehrt_zu_einem_bildschirm():
+    """Ein Knopf ohne Ansicht wäre eine tote Schaltfläche – und umgekehrt
+    wäre eine Ansicht ohne Knopf für Nutzer unerreichbar."""
+    markup = _lies(INDEX)
+    haupt = _lies(FRONTEND / "main.js")
+
+    knoepfe = set(re.findall(r'id="nav-([a-z]+)"[^>]*data-screen="([a-z]+)"', markup))
+    assert knoepfe, "Keine Navigationsknöpfe gefunden"
+
+    for kuerzel, bildschirm in knoepfe:
+        assert f'id="{bildschirm}-screen"' in markup, f"Ansicht fehlt: {bildschirm}"
+        assert f"nav-{kuerzel}" in haupt, f"Knopf nicht verdrahtet: nav-{kuerzel}"
+        assert f"{bildschirm}:" in haupt, f"Bildschirm nicht in der Karte: {bildschirm}"
 
 
 def test_dokument_beginnt_mit_doctype_und_ist_deutsch_ausgezeichnet():
@@ -271,7 +293,17 @@ def test_fokus_ist_sichtbar():
 
 @pytest.mark.parametrize(
     "klasse",
-    ["target-list", "overlay", "progress-bar-large", "toast", "badge", "switch"],
+    [
+        "target-list",
+        "overlay",
+        "progress-bar-large",
+        "toast",
+        "badge",
+        "switch",
+        "entry-list",
+        "tweak-groups",
+        "view-head",
+    ],
 )
 def test_tragende_bausteine_sind_gestaltet(klasse: str):
     assert f".{klasse}" in css_quelle(), f"Stil fehlt: .{klasse}"
