@@ -1,0 +1,18 @@
+# Plane
+
+> Ein schlanker PC-Cleaner für Windows. Erst analysieren, dann auswählen, dann bereinigen. Mit GUI, CLI und TUI. Lokal, ohne Telemetrie. Und ehrlich über die Risiken.
+
+- [Website](https://plane.philipp-paulik.de/)
+- [Source](https://github.com/philppplik/plane)
+
+Was ist Plane?
+Ein MIT-lizenzierter Windows-Cleaner als Vorabversion. Noch keine signierte Veröffentlichung; derzeit aus dem Quellcode bauen.
+
+Kann Plane Daten löschen?
+Ja. Genau das ist der Zweck und das Risiko. Prüfe die Auswahl, nutze die Simulation und sichere wichtige Daten. Schutzmechanismen ersetzen kein Backup.
+
+Welche Voraussetzungen gelten?
+Windows 10 oder 11 auf x64 oder ARM64. Für den Build: Rust stable, Node.js 18+ und Visual Studio Build Tools. Administratorrechte sind optional; betroffene Ziele werden ohne Rechte übersprungen.
+
+Ist Plane gleich die bekannte Projektmanagement-App?
+Nein. Diese Seite beschreibt den Windows-PC-Cleaner von Philipp Paulik, nicht eine andere Software gleichen Namens.
