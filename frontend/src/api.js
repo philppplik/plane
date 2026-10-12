@@ -55,6 +55,9 @@ export const holeLaufwerk = () => rufe('get_disk_stats', undefined, null);
 export const holeSystem = () => rufe('get_system_info', undefined, null);
 export const holeZiele = () => rufe('list_targets', undefined, []);
 
+/** Liefert `"already"`, `"restarting"` – oder `null`, wenn abgelehnt. */
+export const starteAlsAdminNeu = () => rufe('restart_as_admin', undefined, null);
+
 // --- Analyse und Bereinigung ----------------------------------------------
 
 /** Leere Zielliste bedeutet für das Backend: gesamter Katalog. */
@@ -69,9 +72,27 @@ export const brichAb = () => rufe('cancel_run');
 
 export const holeProgramme = () => rufe('list_programs', undefined, []);
 
+/**
+ * Symbole zu mehreren Programmen holen.
+ *
+ * Antwort in der Reihenfolge der Anfrage; `null`, wo keins zu holen war.
+ */
+export const holeProgrammsymbole = (sources) =>
+    rufe('get_program_icons', { sources }, []);
+
 /** `quiet` versucht eine Deinstallation ohne Dialog des Herstellers. */
 export const deinstalliere = (program, quiet) =>
     rufe('uninstall_program', { program, quiet }, null);
+
+// --- Aktualisierungsprüfung ------------------------------------------------
+//
+// Der einzige Netzwerkzugriff der Anwendung. `pruefeAktualisierung` wird nur
+// aufgerufen, wenn die Einstellung an ist oder der Nutzer ausdrücklich auf
+// „Jetzt prüfen" drückt.
+
+export const pruefeAktualisierung = () => rufe('check_update', undefined, null);
+export const oeffneVeroeffentlichung = () => rufe('open_release_page');
+export const ueberspringeVersion = (version) => rufe('skip_version', { version });
 
 // --- Windows-Einstellungen -------------------------------------------------
 

@@ -609,6 +609,73 @@ pub fn get_log_path(app: AppHandle) -> String {
         .to_string()
 }
 
+/// Symbole zu mehreren Programmen auf einmal holen.
+///
+/// Bewusst ein eigener Command und nicht Teil von `list_programs`: das Lesen
+/// von rund 150 Symbolen aus ebenso vielen Dateien dauert spürbar. Die Liste
+/// erscheint deshalb sofort, die Bilder kommen einen Wimpernschlag später
+/// nach.
+///
+/// Die Antwort folgt der Reihenfolge der Anfrage; wo kein Symbol zu holen
+/// war, steht `null`. Ein fehlendes Symbol ist kein Fehler – verwaiste
+/// Einträge zeigen auf Dateien, die es längst nicht mehr gibt.
+#[tauri::command]
+pub async fn get_program_icons(
+    sources: Vec<String>,
+) -> Result<Vec<Option<engine::icons::ProgramIcon>>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        sources
+            .iter()
+            .map(|quelle| engine::icons::hole(quelle))
+            .collect()
+    })
+    .await
+    .map_err(|e| e.to_string())
+}
+
+// ---------------------------------------------------------------------------
+// Aktualisierungsprüfung
+// ---------------------------------------------------------------------------
+
+/// Bei GitHub nach einer neueren Version fragen.
+///
+/// Das Frontend ruft das an zwei Stellen: einmal beim Start, **nur wenn**
+/// `check_updates` an ist, und einmal, wenn der Nutzer in den Einstellungen
+/// ausdrücklich auf „Jetzt prüfen" drückt. Der zweite Fall ist eine bewusste
+/// Handlung und ignoriert die Einstellung deshalb absichtlich.
+#[tauri::command]
+pub async fn check_update() -> Result<engine::update::UpdateInfo, String> {
+    tauri::async_runtime::spawn_blocking(engine::update::pruefe)
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+/// Die Veröffentlichungsseite im Standardbrowser öffnen.
+///
+/// Ohne Parameter: die Adresse steht fest in [`engine::update`]. Ein Command,
+/// der eine beliebige Adresse öffnet, wäre über die Tauri-Brücke erreichbar
+/// und damit ein Hebel.
+#[tauri::command]
+pub fn open_release_page() -> Result<(), String> {
+    engine::update::oeffne_seite()
+}
+
+/// Eine Version dauerhaft übergehen („nicht mehr erinnern").
+#[tauri::command]
+pub fn skip_version(
+    app: AppHandle,
+    state: State<'_, SharedState>,
+    version: String,
+) -> Result<(), String> {
+    let kopie = {
+        let mut zustand = lock(&state)?;
+        zustand.settings.skipped_version = version;
+        zustand.clone()
+    };
+    persist(&app, &kopie);
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     //! Unit-Tests der Command-Schicht.

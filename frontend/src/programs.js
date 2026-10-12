@@ -31,6 +31,14 @@ let zeigeGeschuetzte = false;
 /** Läuft gerade eine Deinstallation? Dann bleiben alle Knöpfe gesperrt. */
 let laeuft = false;
 
+/**
+ * Symbolquelle → Bilddaten, oder `null` wenn es keins gibt.
+ *
+ * Der Zwischenspeicher hängt an der Quelle, nicht an der Kennung: mehrere
+ * Einträge desselben Herstellers zeigen oft auf dieselbe Datei.
+ */
+const symbole = new Map();
+
 /** Callback aus `main.js` für Erfolgs- und Fehlermeldungen. */
 let melde = () => {};
 
@@ -68,6 +76,80 @@ export async function lade(erzwinge = false) {
 
     zeige($('programs-skeleton'), false);
     zeichneListe();
+
+    // Die Liste steht – die Bilder kommen nach. Sie aus demselben Aufruf zu
+    // holen würde den ersten Eindruck um mehrere Sekunden verzögern.
+    ladeSymbole().catch(() => {});
+}
+
+/**
+ * Fehlende Symbole nachladen und die betroffenen Zeilen auffrischen.
+ *
+ * Gefragt wird nur nach dem, was noch nicht im Zwischenspeicher liegt.
+ */
+async function ladeSymbole() {
+    const offen = [
+        ...new Set(
+            programme
+                .map((p) => p.icon)
+                .filter((quelle) => quelle && !symbole.has(quelle))
+        ),
+    ];
+    if (offen.length === 0) return;
+
+    const geholt = (await api.holeProgrammsymbole(offen)) ?? [];
+    offen.forEach((quelle, index) => symbole.set(quelle, geholt[index] ?? null));
+
+    zeichneSymbole();
+}
+
+/**
+ * Die Bilder in die bereits gezeichneten Zeilen setzen.
+ *
+ * Die Liste wird **nicht** neu aufgebaut: das würde die Bildlaufposition auf
+ * null klemmen und die Suche unterbrechen. Stattdessen bekommt jede
+ * Symbolfläche ihren Inhalt einzeln.
+ */
+function zeichneSymbole() {
+    for (const { quelle, flaeche } of flaechen) {
+        const symbol = symbole.get(quelle);
+        if (symbol && flaeche.isConnected) male(flaeche, symbol);
+    }
+}
+
+/**
+ * Gezeichnete Symbolflächen mit ihrer Quelle.
+ *
+ * Bewusst eine Liste und keine `Map`: mehrere Einträge desselben Herstellers
+ * zeigen auf dieselbe Datei, und eine `Map` behielte davon nur einen.
+ */
+const flaechen = [];
+
+/**
+ * Rohe Bildpunkte auf eine Zeichenfläche bringen.
+ *
+ * Das Backend liefert RGBA statt PNG – das spart eine Kiste im Rust-Teil und
+ * kommt ohne `data:`-Adressen aus, die an der Content-Security-Policy hängen
+ * bleiben könnten.
+ */
+function male(flaeche, symbol) {
+    const binaer = atob(symbol.rgba);
+    const punkte = new Uint8ClampedArray(binaer.length);
+    for (let i = 0; i < binaer.length; i += 1) punkte[i] = binaer.charCodeAt(i);
+
+    const leinwand = el('canvas', {
+        klasse: 'entry-icon-canvas',
+        width: symbol.width,
+        height: symbol.height,
+    });
+
+    const kontext = leinwand.getContext('2d');
+    if (!kontext) return;
+    kontext.putImageData(new ImageData(punkte, symbol.width, symbol.height), 0, 0);
+
+    // Der Anfangsbuchstabe weicht dem echten Bild.
+    flaeche.replaceChildren(leinwand);
+    flaeche.classList.add('has-icon');
 }
 
 // ---------------------------------------------------------------------------
@@ -114,6 +196,7 @@ function zeichneListe() {
         return;
     }
 
+    flaechen.length = 0;
     liste.replaceChildren(...sichtbar.map(baueZeile));
 }
 
@@ -130,6 +213,32 @@ function datum(roh) {
     const tag = Number(roh.slice(6, 8));
     if (jahr < 1990 || monat < 1 || monat > 12 || tag < 1 || tag > 31) return '';
     return new Date(jahr, monat - 1, tag).toLocaleDateString();
+}
+
+/**
+ * Symbolfläche einer Zeile.
+ *
+ * Bleibt leer, wenn es kein Symbol gibt – der Platz wird trotzdem gehalten,
+ * damit die Namen aller Zeilen auf derselben Linie stehen. Eine Liste, in
+ * der jede zweite Zeile um 40 Punkte versetzt ist, liest sich schlecht.
+ */
+function baueSymbol(programm) {
+    // Store-Pakete hinterlegen ihr Symbol im Paketmanifest statt in der
+    // Registry; auch bei klassischen Programmen fehlt die Angabe manchmal.
+    // Der Anfangsbuchstabe ist dann besser als eine leere Kachel: er
+    // unterscheidet die Zeilen und wirkt nicht wie ein Ladefehler.
+    const flaeche = el('div', {
+        klasse: 'entry-icon',
+        text: (programm.name.trim()[0] ?? '?').toUpperCase(),
+        attr: { 'aria-hidden': 'true' },
+    });
+
+    if (programm.icon) {
+        flaechen.push({ quelle: programm.icon, flaeche });
+        const bereits = symbole.get(programm.icon);
+        if (bereits) male(flaeche, bereits);
+    }
+    return flaeche;
 }
 
 function baueZeile(programm) {
@@ -184,7 +293,7 @@ function baueZeile(programm) {
             klasse: 'entry' + (programm.removable ? '' : ' is-protected'),
             attr: { role: 'listitem' },
         },
-        [koerper, groesse, programm.removable ? knopf : null]
+        [baueSymbol(programm), koerper, groesse, programm.removable ? knopf : null]
     );
 }
 

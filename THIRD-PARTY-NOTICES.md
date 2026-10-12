@@ -141,7 +141,12 @@ npm ls --all
 
 Die wichtigsten: Tauri (MIT/Apache-2.0), serde (MIT/Apache-2.0), sysinfo (MIT),
 ratatui (MIT), clap (MIT/Apache-2.0), winreg (MIT), glob (MIT/Apache-2.0),
-walkdir (MIT/Unlicense), Vite (MIT).
+walkdir (MIT/Unlicense), ureq (MIT/Apache-2.0), Vite (MIT).
+
+`ureq` ist die einzige Netzwerkabhängigkeit und dient ausschließlich der
+Suche nach neuen Versionen, die standardmäßig aus ist. Verschlüsselt wird
+über SChannel, den TLS-Stack von Windows — Plane liefert weder eigene
+Kryptografie noch eigene Wurzelzertifikate mit.
 
 Die Schriften **Young Serif** und **Elms Sans** liegen unter `frontend/fonts/`
 und unterliegen den Lizenzbedingungen ihrer jeweiligen Urheber.

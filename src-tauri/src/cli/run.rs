@@ -150,6 +150,10 @@ pub fn ausfuehren(cli: Cli) -> Exitcode {
                 &ausgabe,
             )
         }
+        Some(Befehl::Update { json }) => {
+            let ausgabe = Ausgabe::neu(lang, cli.no_color, json);
+            melde(aktualisierung(&ausgabe), &ausgabe)
+        }
         Some(Befehl::Tui) => starte_tui(&lang, cli.no_color),
         // Ohne Unterbefehl ist die Oberfläche gemeint – aber nur, wenn
         // jemand zuschaut. In einer Pipeline wäre das eine Falle.
@@ -715,6 +719,80 @@ fn tweaks(
             .stil
             .gedaempft(&i18n::t(&ausgabe.lang, "tweaks.omitted")),
     );
+
+    Ok(Exitcode::Erfolg)
+}
+
+/// Nachsehen, ob eine neuere Version erschienen ist.
+///
+/// Der einzige Befehl mit Netzwerkzugriff. Anders als in der Oberfläche
+/// braucht er keinen Schalter in den Einstellungen: wer ihn eintippt, hat
+/// sich bereits entschieden.
+///
+/// Der Exitcode ist bewusst auch dann `0`, wenn eine neuere Version vorliegt
+/// — „es gibt ein Update" ist kein Fehler. Skripte sollen `--json` auswerten
+/// und auf `newer` sehen, statt einen Exitcode umzudeuten.
+fn aktualisierung(ausgabe: &Ausgabe) -> Result<Exitcode, Bedienfehler> {
+    let info = match engine::update::pruefe() {
+        Ok(info) => info,
+        Err(schluessel) => {
+            if ausgabe.json {
+                println!(
+                    r#"{{"error":"{}","message":{}}}"#,
+                    schluessel,
+                    serde_json::to_string(&text::meldung(&ausgabe.lang, &schluessel))
+                        .unwrap_or_else(|_| "\"\"".into())
+                );
+            } else {
+                ausgabe.zeile(
+                    &ausgabe
+                        .stil
+                        .fehler(&text::meldung(&ausgabe.lang, &schluessel)),
+                );
+            }
+            return Ok(Exitcode::Fehlgeschlagen);
+        }
+    };
+
+    if ausgabe.json {
+        println!("{}", serde_json::to_string(&info).unwrap_or_default());
+        return Ok(Exitcode::Erfolg);
+    }
+
+    if info.newer {
+        ausgabe.zeile(&ausgabe.stil.akzent(&i18n::t(&ausgabe.lang, "update.title")));
+        ausgabe.zeile(&i18n::format(
+            &ausgabe.lang,
+            "update.available",
+            &[&info.latest, &info.current],
+        ));
+        if !info.published.is_empty() {
+            ausgabe.zeile(&ausgabe.stil.gedaempft(&i18n::format(
+                &ausgabe.lang,
+                "update.published",
+                &[&info.published],
+            )));
+        }
+        ausgabe.zeile("");
+        ausgabe.zeile(&i18n::format(
+            &ausgabe.lang,
+            "update.manual",
+            &[engine::update::seite()],
+        ));
+        ausgabe.zeile("");
+        ausgabe.zeile(
+            &ausgabe
+                .stil
+                .gedaempft(&i18n::t(&ausgabe.lang, "update.install_hint")),
+        );
+    } else {
+        ausgabe.zeile(&i18n::t(&ausgabe.lang, "update.up_to_date"));
+        ausgabe.zeile(&ausgabe.stil.gedaempft(&i18n::format(
+            &ausgabe.lang,
+            "update.current",
+            &[&info.current],
+        )));
+    }
 
     Ok(Exitcode::Erfolg)
 }
