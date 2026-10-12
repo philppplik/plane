@@ -9,6 +9,103 @@ die Versionierung [Semantic Versioning](https://semver.org/lang/de/).
 
 Nichts.
 
+## [0.3.0] — 2026-09-11
+
+Zwei neue Fähigkeiten und drei Korrekturen an Stellen, die im Alltag
+gestört haben.
+
+> Die Installationspakete sind **nicht signiert**. Windows SmartScreen wird
+> beim ersten Start warnen. Siehe [SECURITY.md](SECURITY.md).
+
+### Hinzugefügt
+
+- **Programmsymbole** in der Programmliste. Gelesen wird `DisplayIcon` aus
+  der Registry; fehlt der Wert, dienen die Deinstallationsdatei oder die
+  größte `.exe` im Installationsordner als Ersatz. Die Symbole kommen in
+  einem zweiten Schritt nach, damit die Liste sofort steht.
+
+  Store-Pakete legen ihr Symbol im Paketmanifest ab und sind darüber nicht
+  erreichbar; sie zeigen ihren Anfangsbuchstaben. Das betrifft auf einem
+  typischen System die Mehrzahl der Einträge.
+- **Ergebnis einer Bereinigung als Dialog** statt als Abschnitt am
+  Seitenende. Neu darin: die Zähler für Einträge, die in Benutzung waren,
+  für die die Rechte fehlten oder die Windows selbst sperrt — jeweils mit
+  der Erklärung, was man dagegen tun kann. Diese Zahlen gab es bisher nur in
+  der Kommandozeile.
+- **Administratorrechte für Windows-Tweaks.** Punkte, die `HKEY_LOCAL_MACHINE`
+  schreiben, waren ohne Rechte wirkungslos gesperrt. Jetzt fragt Plane nach
+  und startet auf Wunsch mit Rechten neu — Windows zeigt dabei seine
+  UAC-Rückfrage. Einen einzelnen Registry-Zugriff nachträglich zu erhöhen
+  sieht Windows nicht vor; es geht nur über den Prozess.
+- **Schlanke Bildlaufleisten**, die sich dem hellen und dunklen
+  Erscheinungsbild anpassen.
+- **Suche nach neuen Versionen.** Plane kann bei GitHub nachsehen, ob eine
+  neuere Veröffentlichung vorliegt — in der Oberfläche über
+  **Einstellungen → Nach neuen Versionen suchen**, in der Kommandozeile über
+  `plane-cli update`.
+
+  Das ist der erste und einzige Netzwerkzugriff in Plane. Damit das
+  Offline-Versprechen trotzdem hält:
+
+  - **Standardmäßig aus.** Wer nichts einstellt, für den ändert sich nichts.
+  - **Eine Anfrage, ein Ziel.** Ein `GET` auf `api.github.com`. Mitgeschickt
+    wird nichts außer dem `User-Agent` `plane/<version>`, den die GitHub-API
+    verlangt.
+  - **Kein Selbstaktualisieren.** Plane lädt nichts herunter und installiert
+    nichts; der Knopf öffnet die Veröffentlichungsseite im Browser. Solange
+    die Pakete nicht signiert sind, wäre alles andere ein Angriffsweg.
+  - **Die Zieladresse steht im Programm**, nicht in der Antwort von GitHub.
+  - **Ein Vertragstest** stellt sicher, dass an keiner anderen Stelle
+    Netzwerkcode entsteht.
+
+  Der Hinweis lässt sich vertagen oder für eine bestimmte Version dauerhaft
+  überspringen — ein Hinweis, den man nicht loswird, wird übersehen.
+- **Dokumentation der Kommandozeile** um `tweaks` und `update` ergänzt; beide
+  fehlten in der Befehlsübersicht.
+
+### Geändert
+
+- Der Reiter **„Einstellungen anpassen" heißt jetzt „Windows Tweaks"**. Zwei
+  Einträge mit „Einstellungen" im Namen, die verschiedene Dinge tun, waren
+  eine vermeidbare Stolperstelle.
+- Der Papierkorb wird über **`SHEmptyRecycleBinW`** geleert statt über
+  PowerShell. Der Aufruf ist rund eine Sekunde schneller, und Plane kommt
+  damit wieder ganz ohne Shell aus.
+- Eine Zeile in der Tweak-Liste wird beim Umschalten **einzeln** neu
+  gezeichnet. Vorher wurde die ganze Liste ersetzt; dabei fiel die Seitenhöhe
+  kurz auf null, der Browser klemmte die Bildlaufposition — und die Ansicht
+  sprang nach oben.
+- README und `SECURITY.md` sagten „kein Netzwerkcode, keine
+  Aktualisierungsprüfung". Das stimmt so nicht mehr und steht jetzt genau da,
+  wo es hingehört — mit der vollständigen Auskunft, was bei eingeschalteter
+  Prüfung das Gerät verlässt.
+
+### Behoben
+
+- **Der Installations-Einzeiler für die Kommandozeile lief ins Leere.** An
+  der Veröffentlichung 0.2.0 hingen nur die beiden MSI-Dateien; die vom
+  Skript erwarteten `plane-cli-x64.exe`, `plane-cli-arm64.exe` und
+  `SHA256SUMS.txt` fehlten, weil der Release-Workflow sie erst nach dem
+  Bauen von 0.2.0 erzeugte. Ab 0.3.0 hängen sie dran.
+- **Der Internet-Zwischenspeicher meldete einen Fehler.** Windows verweigert
+  das Durchlaufen von `INetCache\Content.IE5` grundsätzlich — jedem Prozess,
+  auch dem Administrator (`os error 448`). Das war als Fehlschlag gezählt und
+  rot angezeigt. Es ist jetzt ein eigener, erklärter Zustand neben „in
+  Benutzung" und „Rechte fehlen".
+- **Ein leerer Papierkorb sah aus wie ein Defekt.** `Clear-RecycleBin` meldet
+  in diesem Fall „Das System kann die angegebene Datei nicht finden" samt
+  PowerShell-Stacktrace. Der bisherige Notbehelf suchte im Fehlertext nach
+  „empty" oder „leer" und griff auf einem deutschen Windows nicht. Der
+  Rückgabewert von `SHEmptyRecycleBinW` lässt sich dagegen eindeutig
+  auswerten.
+
+### Sicherheit
+
+- TLS läuft über **SChannel**, also über den TLS-Stack und den
+  Zertifikatspeicher von Windows. Kein mitgeliefertes Krypto, keine eigenen
+  Wurzelzertifikate — und es funktioniert dort, wo eine Firma TLS aufbricht.
+  Der im System eingetragene Proxy wird beachtet.
+
 ## [0.2.0] — 2026-09-11
 
 Der Umbau vom Prototyp zum vollwertigen Cleaner — und zwei neue Werkzeuge

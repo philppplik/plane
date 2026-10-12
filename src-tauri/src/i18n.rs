@@ -34,7 +34,7 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     // --- Navigation ------------------------------------------------------
     ("nav.dashboard", "Übersicht", "Dashboard"),
     ("nav.programs", "Programme", "Programs"),
-    ("nav.tweaks", "Einstellungen anpassen", "Adjust settings"),
+    ("nav.tweaks", "Windows Tweaks", "Windows Tweaks"),
     ("nav.about", "Über Plane", "About Plane"),
     ("nav.settings", "Einstellungen", "Settings"),
     ("nav.back", "Zurück zur Übersicht", "Back to dashboard"),
@@ -85,11 +85,13 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     ("status.failed", "Fehlgeschlagen", "Failed"),
     ("status.ok", "Erledigt", "Done"),
     ("status.cancelled", "Abgebrochen", "Cancelled"),
+    ("result.title", "Ergebnis", "Result"),
     ("skip.needs_admin", "Übersprungen: Plane läuft ohne Administratorrechte", "Skipped: Plane is running without administrator rights"),
     ("skip.needs_explicit_selection", "Übersprungen: Bitte einzelne Dateien auswählen", "Skipped: please select individual files"),
     ("warn.process_running", "{0} läuft – gesperrte Dateien bleiben erhalten", "{0} is running – locked files will remain"),
     ("error.service_stop", "Dienst konnte nicht gestoppt werden: {0}", "Could not stop service: {0}"),
     ("error.service_start", "Dienst konnte nicht neu gestartet werden: {0}", "Could not restart service: {0}"),
+    ("error.recyclebin", "Der Papierkorb ließ sich nicht leeren (Windows meldete {0}).", "The Recycle Bin could not be emptied (Windows reported {0})."),
     ("error.registry_backup", "Registry-Sicherung fehlgeschlagen – es wurde nichts geändert: {0}", "Registry backup failed – nothing was changed: {0}"),
     ("clean.failed", "Fehlgeschlagen: {0}", "Failed: {0}"),
     ("clean.summary", "{0} freigegeben, {1} Einträge entfernt", "{0} freed, {1} items removed"),
@@ -99,6 +101,8 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     ("clean.locked_hint", "Das ist normal – ein laufendes Programm hält seine Dateien offen. Administratorrechte ändern daran nichts; schließen Sie das Programm und starten Sie erneut.", "This is normal – a running program keeps its files open. Administrator rights do not help; close the program and run again."),
     ("clean.denied", "{0} Einträge brauchten höhere Rechte", "{0} items needed higher privileges"),
     ("clean.denied_hint", "Mit Administratorrechten neu starten, um diese Einträge zu entfernen.", "Restart with administrator rights to remove these items."),
+    ("clean.blocked", "{0} Einträge sperrt Windows selbst", "{0} items are blocked by Windows itself"),
+    ("clean.blocked_hint", "Windows lässt diese Ordner von keinem Programm durchlaufen – auch nicht als Administrator. Betroffen ist vor allem der Internet-Zwischenspeicher; Windows räumt ihn selbst auf.", "Windows lets no program traverse these folders – not even as administrator. This mainly affects the internet cache; Windows cleans it up by itself."),
     ("clean.log_written", "Protokoll: {0}", "Log: {0}"),
 
     // --- Administratorrechte ---------------------------------------------
@@ -170,6 +174,8 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     ("settings.confirm_risky.hint", "Dringend empfohlen. Ohne Nachfrage löscht Plane auch Unwiderrufliches.", "Strongly recommended. Without it Plane also deletes irreversible items."),
     ("settings.dry_run_default", "Standardmäßig nur simulieren", "Simulate by default"),
     ("settings.dry_run_default.hint", "Zeigt bei jedem Lauf nur an, was passieren würde.", "Every run only shows what would happen."),
+    ("settings.check_updates", "Nach neuen Versionen suchen", "Check for new versions"),
+    ("settings.check_updates.hint", "Fragt beim Start bei GitHub nach der jüngsten Version. Das ist der einzige Netzwerkzugriff, den Plane kennt — er lädt nichts herunter und installiert nichts. Übermittelt wird nichts außer Ihrer IP-Adresse, wie beim Aufruf einer Webseite.", "Asks GitHub for the newest version at startup. This is the only network access Plane has — it downloads nothing and installs nothing. Nothing is transmitted beyond your IP address, just as when opening any web page."),
     ("settings.reset_welcome", "Willkommensbildschirm erneut zeigen", "Show welcome screen again"),
     ("settings.close", "Schließen", "Close"),
     ("settings.saved", "Gespeichert", "Saved"),
@@ -272,7 +278,7 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     ("target.registry.orphans.description", "Verweise auf Programme, die es nicht mehr gibt. Microsoft rät von Registry-Bereinigung ab; Plane sichert deshalb vorher automatisch.", "References to programs that no longer exist. Microsoft advises against registry cleaning, so Plane always creates a backup first."),
 
     // --- Tweaks -----------------------------------------------------------
-    ("tweaks.title", "Einstellungen anpassen", "Adjust settings"),
+    ("tweaks.title", "Windows Tweaks", "Windows Tweaks"),
     ("tweaks.subtitle", "Eine kleine, geprüfte Auswahl an Windows-Einstellungen. Jede lässt sich zurücknehmen — Plane merkt sich dafür den Zustand, den es vorgefunden hat.", "A small, vetted set of Windows settings. Every one can be undone — Plane remembers the state it found, not an assumed default."),
     ("tweaks.omitted", "Bewusst nicht dabei: Windows Update abschalten, Defender deaktivieren, Edge oder OneDrive entfernen. Solche Eingriffe haben dokumentiert Systeme beschädigt.", "Deliberately absent: disabling Windows Update, turning off Defender, removing Edge or OneDrive. Such changes have documented cases of breaking systems."),
     ("tweaks.apply", "Anwenden", "Apply"),
@@ -290,6 +296,27 @@ pub const ENTRIES: &[(&str, &str, &str)] = &[
     ("tweak.managed", "Von einer Richtlinie Ihrer Organisation überlagert", "Overridden by a policy of your organization"),
     ("tweak.applied", "Übernommen.", "Applied."),
     ("tweak.reverted", "Zurückgenommen.", "Undone."),
+    // --- Aktualisierungsprüfung ------------------------------------------
+    ("update.title", "Neue Version verfügbar", "New version available"),
+    ("update.check_now", "Jetzt prüfen", "Check now"),
+    ("update.checking", "Wird geprüft …", "Checking …"),
+    ("update.current", "Ihre Version: {0}", "Your version: {0}"),
+    ("update.available", "Version {0} ist erschienen. Sie haben {1}.", "Version {0} has been released. You have {1}."),
+    ("update.published", "Veröffentlicht am {0}", "Published on {0}"),
+    ("update.up_to_date", "Plane ist auf dem neuesten Stand.", "Plane is up to date."),
+    ("update.download", "Herunterladen", "Download"),
+    ("update.later", "Später", "Later"),
+    ("update.skip", "Diese Version überspringen", "Skip this version"),
+    ("update.manual", "Oder im Browser öffnen: {0}", "Or open in your browser: {0}"),
+    ("update.install_hint", "Plane installiert nichts von selbst. Der Knopf öffnet die Veröffentlichungsseite im Browser; von dort laden Sie die passende Datei herunter und starten sie.", "Plane installs nothing by itself. The button opens the release page in your browser; from there you download the matching file and run it."),
+    ("update.disabled", "Die Suche nach neuen Versionen ist ausgeschaltet.", "Checking for new versions is turned off."),
+    ("update.error.offline", "GitHub ist nicht erreichbar. Besteht eine Internetverbindung?", "GitHub cannot be reached. Is there an internet connection?"),
+    ("update.error.timeout", "GitHub hat nicht rechtzeitig geantwortet. Bitte später erneut versuchen.", "GitHub did not answer in time. Please try again later."),
+    ("update.error.rate_limit", "GitHub hat zu viele Anfragen von dieser Verbindung erhalten. Bitte später erneut versuchen.", "GitHub received too many requests from this connection. Please try again later."),
+    ("update.error.none_published", "Es gibt noch keine Veröffentlichung zum Vergleichen.", "There is no published release to compare against yet."),
+    ("update.error.unreadable", "Die Antwort von GitHub war nicht lesbar.", "The answer from GitHub was not readable."),
+    ("update.error.browser", "Der Browser ließ sich nicht öffnen. Bitte die Adresse von Hand aufrufen.", "The browser could not be opened. Please enter the address manually."),
+
     ("tweakgroup.privacy", "Datenschutz", "Privacy"),
     ("tweakgroup.explorer", "Explorer", "File Explorer"),
     ("tweakgroup.taskbar", "Taskleiste", "Taskbar"),
@@ -529,6 +556,37 @@ mod tests {
         ] {
             assert_ne!(t("de", schluessel), schluessel, "fehlt: {schluessel}");
             assert_ne!(t("en", schluessel), schluessel, "fehlt: {schluessel}");
+        }
+    }
+
+    /// Die Aktualisierungsprüfung liefert Fehler als Schlüssel, nicht als
+    /// fertige Sätze. Ein fehlender Eintrag zeigte dem Nutzer `update.error.*`.
+    #[test]
+    fn jeder_fehler_der_aktualisierungspruefung_ist_uebersetzt() {
+        for schluessel in [
+            "update.error.offline",
+            "update.error.timeout",
+            "update.error.rate_limit",
+            "update.error.none_published",
+            "update.error.unreadable",
+            "update.error.browser",
+        ] {
+            assert_ne!(t("de", schluessel), schluessel, "fehlt: {schluessel}");
+            assert_ne!(t("en", schluessel), schluessel, "fehlt: {schluessel}");
+        }
+    }
+
+    /// Wer die Prüfung einschaltet, soll vorher lesen können, was dabei
+    /// passiert – und zwar ohne die Dokumentation zu öffnen.
+    #[test]
+    fn der_hinweis_zur_netzwerkpruefung_nennt_github() {
+        for sprache in ["de", "en"] {
+            let hinweis = t(sprache, "settings.check_updates.hint");
+            assert!(
+                hinweis.contains("GitHub"),
+                "{sprache}: GitHub nicht genannt"
+            );
+            assert!(hinweis.len() > 80, "{sprache}: zu knapp für eine Zusage");
         }
     }
 

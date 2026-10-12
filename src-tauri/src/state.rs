@@ -82,6 +82,17 @@ pub struct Settings {
     pub dry_run_default: bool,
     /// Zuletzt gewählte Ziele – wird beim nächsten Start wiederhergestellt.
     pub selected_targets: Vec<String>,
+    /// Beim Start bei GitHub nach einer neueren Version fragen.
+    ///
+    /// **Standard: aus.** Das ist der einzige Netzwerkzugriff, den Plane
+    /// kennt; er bleibt eine bewusste Entscheidung des Nutzers. Siehe
+    /// [`crate::engine::update`].
+    pub check_updates: bool,
+    /// Version, zu der der Nutzer „nicht mehr erinnern" gewählt hat.
+    ///
+    /// Ohne dieses Feld erschiene derselbe Hinweis bei jedem Start erneut –
+    /// und ein Hinweis, den man nicht loswird, wird irgendwann übersehen.
+    pub skipped_version: String,
 }
 
 impl Default for Settings {
@@ -92,6 +103,8 @@ impl Default for Settings {
             confirm_risky: true,
             dry_run_default: false,
             selected_targets: Vec::new(),
+            check_updates: false,
+            skipped_version: String::new(),
         }
     }
 }
@@ -238,6 +251,28 @@ mod tests {
         assert!(s.confirm_risky, "Nachfragen muss standardmäßig an sein");
         assert!(!s.dry_run_default);
         assert!(crate::i18n::is_supported(&s.language));
+        assert!(
+            !s.check_updates,
+            "Der einzige Netzwerkzugriff muss standardmäßig aus sein"
+        );
+        assert!(s.skipped_version.is_empty());
+    }
+
+    /// Wer vor 0.3.0 installiert hat, soll nach dem Update nicht plötzlich
+    /// ins Netz funken. Eine Zustandsdatei ohne das Feld muss „aus" ergeben.
+    #[test]
+    fn zustandsdatei_ohne_das_feld_prueft_nicht_auf_updates() {
+        let dir = temp_dir("kein-updatefeld");
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(
+            state_path(&dir),
+            r#"{"has_seen_welcome": true, "settings": {"language": "de"}}"#,
+        )
+        .unwrap();
+
+        assert!(!AppState::load(&dir).settings.check_updates);
+
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]

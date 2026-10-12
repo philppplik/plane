@@ -29,6 +29,8 @@ export const zustand = {
     laeuft: null,
     /** Ziele werden gerade geladen – dann Skelett statt leerer Fläche. */
     laedt: true,
+    /** Läuft Plane mit Administratorrechten? Wird beim Start ermittelt. */
+    istAdmin: false,
 };
 
 /** Analyseergebnis eines Ziels, falls vorhanden. */
