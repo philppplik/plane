@@ -147,7 +147,7 @@ verlangen, ohnehin mit Ihrer IT abstimmen.
 
 ## In der Oberfläche
 
-Seitenleiste → **Einstellungen anpassen**. Die Punkte sind nach den fünf
+Seitenleiste → **Windows Tweaks**. Die Punkte sind nach den fünf
 Gruppen sortiert; jeder zeigt seinen Zustand als Abzeichen, seine
 Nebenwirkung als eigene Zeile und wann die Änderung greift.
 
@@ -157,7 +157,10 @@ wie Ausschalten (siehe unten). Punkte, die auf diesem System wirkungslos sind
 oder unter einer Gruppenrichtlinie stehen, sind gesperrt und gedämpft
 dargestellt statt versteckt — wer sie sucht, soll erfahren, warum sie fehlen.
 
-Punkte mit Administratorrechten fragen vorher nach.
+Punkte, die Administratorrechte brauchen, fragen vorher nach und starten
+Plane auf Wunsch erhöht neu — Windows zeigt dabei seine UAC-Rückfrage. Einen
+einzelnen Registry-Zugriff nachträglich zu erhöhen sieht Windows nicht vor;
+es geht nur über den Prozess.
 
 ## Kommandozeile
 

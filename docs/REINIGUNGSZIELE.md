@@ -86,7 +86,13 @@ die Anzeige:
 | `recyclebin.all` | 🔴 | Endgültig auf allen Laufwerken. Genau hier findet man versehentlich Gelöschtes wieder |
 
 Die Größe wird direkt aus `$Recycle.Bin` je Laufwerk ermittelt; geleert wird
-über `Clear-RecycleBin`, damit Windows seine Indexdateien konsistent hält.
+über `SHEmptyRecycleBinW`, damit Windows seine Indexdateien konsistent hält.
+
+Bis 0.2.0 lief das über `Clear-RecycleBin` in PowerShell. Das Cmdlet meldet
+bei bereits leerem Papierkorb einen Fehler samt Stacktrace — ein völlig
+normaler Lauf sah dadurch nach einem Defekt aus. `SHEmptyRecycleBinW` ist die
+Funktion, die das Cmdlet intern ohnehin aufruft; ihr Rückgabewert lässt sich
+eindeutig auswerten, statt ihn aus übersetztem Fehlertext zu erraten.
 
 ### Browser
 
