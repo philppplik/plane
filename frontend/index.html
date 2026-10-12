@@ -83,6 +83,25 @@
 
             <main class="main-content">
 
+                <!-- ---------- Hinweis auf eine neuere Version ----------
+                     Liegt über allen Ansichten, weil er unabhängig davon
+                     gilt, wo der Nutzer gerade ist. Erscheint nur, wenn die
+                     Prüfung eingeschaltet ist und tatsächlich etwas Neueres
+                     vorliegt. -->
+                <div id="update-banner" class="update-banner is-hidden" role="status">
+                    <div class="update-banner-text">
+                        <strong id="update-banner-title"></strong>
+                        <span id="update-banner-detail"></span>
+                        <span id="update-banner-hint" class="update-banner-hint"></span>
+                    </div>
+                    <div class="update-banner-actions">
+                        <button id="update-download" class="btn-primary btn-small"
+                                type="button"></button>
+                        <button id="update-later" class="btn-text" type="button"></button>
+                        <button id="update-skip" class="btn-text" type="button"></button>
+                    </div>
+                </div>
+
                 <!-- ---------- Übersicht ---------- -->
                 <section id="home-screen" class="view" aria-labelledby="home-title">
 
@@ -128,16 +147,6 @@
                         <div id="target-list" class="target-list"></div>
                     </section>
 
-                    <section id="result-panel" class="panel result-panel" aria-live="polite"
-                             hidden>
-                        <div class="result-head">
-                            <span id="result-badge" class="badge"></span>
-                            <button id="result-close" class="btn-text" type="button"></button>
-                        </div>
-                        <p id="result-total" class="result-total"></p>
-                        <p id="result-backup" class="result-backup" hidden></p>
-                        <ul id="result-list" class="result-list"></ul>
-                    </section>
                 </section>
 
                 <!-- ---------- Programme ---------- -->
@@ -312,9 +321,49 @@
                 <p id="settings-dry-run-hint" class="setting-hint"></p>
             </div>
 
+            <div class="setting-row">
+                <label class="switch" for="settings-check-updates">
+                    <input type="checkbox" id="settings-check-updates">
+                    <span class="switch-track" aria-hidden="true"></span>
+                    <span class="switch-text" id="settings-check-updates-label"></span>
+                </label>
+                <p id="settings-check-updates-hint" class="setting-hint"></p>
+                <div class="setting-action">
+                    <button id="settings-check-now" class="btn-secondary btn-small"
+                            type="button"></button>
+                    <span id="settings-update-result" class="setting-hint"
+                          aria-live="polite"></span>
+                </div>
+            </div>
+
             <div class="modal-actions">
                 <button id="settings-reset-welcome" class="btn-secondary" type="button"></button>
                 <button id="settings-close" class="btn-primary" type="button"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         Ergebnis einer Bereinigung
+
+         Bewusst ein Dialog und kein Abschnitt am Seitenende: das Ergebnis
+         ist der Moment, auf den der ganze Lauf hinausläuft. Wer dafür
+         scrollen muss, sieht es nicht.
+         ================================================================ -->
+    <div id="result-modal" class="modal is-hidden" role="dialog" aria-modal="true"
+         aria-labelledby="result-title">
+        <div class="modal-content modal-wide">
+            <button id="result-close-x" class="modal-close" type="button">×</button>
+            <div class="result-head">
+                <h2 id="result-title"></h2>
+                <span id="result-badge" class="badge"></span>
+            </div>
+            <p id="result-total" class="result-total"></p>
+            <p id="result-backup" class="result-backup" hidden></p>
+            <ul id="result-notes" class="result-notes"></ul>
+            <ul id="result-list" class="result-list"></ul>
+            <div class="modal-actions">
+                <button id="result-close" class="btn-primary" type="button"></button>
             </div>
         </div>
     </div>

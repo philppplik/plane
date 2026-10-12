@@ -27,6 +27,7 @@ pub mod catalog;
 pub mod clean;
 pub mod elevation;
 pub mod fsutil;
+pub mod icons;
 pub mod installers;
 pub mod log;
 pub mod process;
@@ -37,6 +38,7 @@ pub mod scan;
 pub mod tweaks;
 pub mod types;
 pub mod uninstall;
+pub mod update;
 
 pub use catalog::{default_selection, target_by_key, targets_in, TARGETS};
 pub use clean::clean;

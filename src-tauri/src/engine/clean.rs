@@ -73,6 +73,7 @@ pub fn clean(anfrage: &CleanRequest, backup_dir: &Path, ctx: &RunContext) -> Cle
         total_removed: ergebnisse.iter().map(|t| t.removed_items).sum(),
         total_locked: ergebnisse.iter().map(|t| t.locked_items).sum(),
         total_denied: ergebnisse.iter().map(|t| t.denied_items).sum(),
+        total_blocked: ergebnisse.iter().map(|t| t.blocked_items).sum(),
         error: if fehlgeschlagen.is_empty() {
             String::new()
         } else {
@@ -106,6 +107,7 @@ fn clean_target(
         removed_items: 0,
         locked_items: 0,
         denied_items: 0,
+        blocked_items: 0,
         errors: Vec::new(),
     };
 
@@ -275,6 +277,7 @@ fn verbuche(ergebnis: &mut TargetClean, ausgang: Result<Removal, String>) {
         }
         Ok(Removal::InUse) => ergebnis.locked_items += 1,
         Ok(Removal::Denied) => ergebnis.denied_items += 1,
+        Ok(Removal::Blocked) => ergebnis.blocked_items += 1,
         // War schon weg – zwischen Analyse und Bereinigung verschwunden.
         Ok(Removal::Vanished) => {}
         Err(fehler) => ergebnis.errors.push(fehler),

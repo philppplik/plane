@@ -261,12 +261,27 @@ pub enum Removal {
     InUse,
     /// Zugriff verweigert. Hier helfen erhöhte Rechte oft.
     Denied,
+    /// Windows verweigert das Betreten grundsätzlich.
+    ///
+    /// Betrifft vor allem `INetCache\Content.IE5`: Windows legt dort eine
+    /// Bereitstellung an, die es selbst als „nicht vertrauenswürdig"
+    /// einstuft, und verweigert jedem Prozess das rekursive Durchlaufen —
+    /// auch dem Administrator, auch dem System. Das ist kein Fehler, sondern
+    /// eine Entscheidung von Windows, und der Ordner wird von Windows selbst
+    /// aufgeräumt.
+    Blocked,
 }
 
 /// Windows-Fehlercodes, die „gesperrt" bedeuten.
 const ERROR_SHARING_VIOLATION: i32 = 32;
 const ERROR_LOCK_VIOLATION: i32 = 33;
 const ERROR_ACCESS_DENIED: i32 = 5;
+
+/// `ERROR_UNTRUSTED_MOUNT_POINT` – Windows lässt den Pfad nicht durchlaufen.
+const ERROR_UNTRUSTED_MOUNT_POINT: i32 = 448;
+
+/// `ERROR_CANT_ACCESS_FILE` – dieselbe Familie, andere Ursache.
+const ERROR_CANT_ACCESS_FILE: i32 = 1920;
 
 /// E/A-Fehler einordnen: erwartbarer Zustand oder echter Fehler?
 fn einordnen(fehler: &std::io::Error) -> Option<Removal> {
@@ -278,6 +293,7 @@ fn einordnen(fehler: &std::io::Error) -> Option<Removal> {
     match fehler.raw_os_error() {
         Some(ERROR_SHARING_VIOLATION) | Some(ERROR_LOCK_VIOLATION) => Some(Removal::InUse),
         Some(ERROR_ACCESS_DENIED) => Some(Removal::Denied),
+        Some(ERROR_UNTRUSTED_MOUNT_POINT) | Some(ERROR_CANT_ACCESS_FILE) => Some(Removal::Blocked),
         _ => None,
     }
 }
