@@ -153,6 +153,16 @@ pub enum Befehl {
         #[arg(long)]
         json: bool,
     },
+    /// Nachsehen, ob eine neuere Version erschienen ist.
+    ///
+    /// Der einzige Befehl, der das Netzwerk berührt. Er lädt nichts herunter
+    /// und installiert nichts – er nennt nur die Versionsnummer und die
+    /// Adresse.
+    Update {
+        /// Ausgabe als JSON.
+        #[arg(long)]
+        json: bool,
+    },
     /// Die textbasierte Oberfläche starten.
     Tui,
 }
@@ -299,12 +309,14 @@ mod tests {
                 removed_items: 0,
                 locked_items: 0,
                 denied_items: 0,
+                blocked_items: 0,
                 errors: Vec::new(),
             }],
             total_freed: 0,
             total_removed: 0,
             total_locked: 0,
             total_denied: 0,
+            total_blocked: 0,
             duration_ms: 0,
             cancelled,
             registry_backup: None,
