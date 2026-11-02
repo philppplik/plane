@@ -6,4 +6,4 @@
 -r requirements.txt
 
 # Testframework der Suite unter tests/ (siehe docs/TESTS.md).
-pytest==9.1.1
+pytest==9.2.0
